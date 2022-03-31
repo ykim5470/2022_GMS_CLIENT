@@ -8,6 +8,8 @@ const compression = require('compression')
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
+const multer = require('multer')
+const upload = multer({ dest: 'uploads/' })
 const app = express()
 
 const Logger = require('./Logger')
@@ -27,6 +29,12 @@ host = 'http://' + 'localhost' + ':' + port
 io = new Server({
   maxHttpBufferSize: 1e7,
   pingTimeout: 60000,
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['my-custom-header'],
+    credentials: true,
+  },
 }).listen(server)
 
 // Swagger config
@@ -72,6 +80,13 @@ app.get('/joinRoom', (req, res) => {
       },
     })
   }
+})
+
+app.post('/roomCreate', upload.single('thumbNail'), (req, res) => {
+  req.header('Access-Control-Allow-Origin', '*')
+  // console.log(req.body)
+  // console.log(req.file)
+  // console.log(req.headers)
 })
 
 const iceServers = [
@@ -184,7 +199,7 @@ io.sockets.on('connect', (socket) => {
     peers[channel][socket.id] = {
       peer_name: peer_name,
       peer_role: peer_role,
-      peerdeo: peer_video,
+      peer_video: peer_video,
       peer_audio: peer_audio,
       peer_hand: peer_hand,
       peer_rec: peer_rec,
