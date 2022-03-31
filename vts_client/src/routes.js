@@ -4,8 +4,8 @@ import { Route } from 'react-router-dom'
  * @interface Components
  */
 import Landing from './components/webrtc/Landing'
-import Stream from './components/webrtc/Stream'
-import User from './components/webrtc/User'
+import Stream from './components/webrtc/stream/Stream'
+import User from './components/webrtc/user/User'
 
 const routes = [
   /**

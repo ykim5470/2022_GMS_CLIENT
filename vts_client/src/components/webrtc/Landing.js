@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import fetchQuotes from '../../api/fetch'
+import { GetFetchQuotes } from '../../api/fetch'
 import { useNavigate } from 'react-router-dom'
 
 const Landing = ({ match, location, history }) => {
   let navigate = useNavigate()
 
   const joinRoom = () => {
-    fetchQuotes({
+    GetFetchQuotes({
       uri: 'http://localhost:4001/joinRoom',
+      msg: 'Get Randome room ID',
     }).then((result) => {
       return navigate(`/stream/${result.data.roomId}`)
     })

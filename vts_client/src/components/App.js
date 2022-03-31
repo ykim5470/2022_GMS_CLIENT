@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { routes } from '../routes'
 import { Routes } from 'react-router-dom'
 
-const App = () => {
+const App = (props) => {
   return (
     <React.Fragment>
       {routes.map((route, index) => {
