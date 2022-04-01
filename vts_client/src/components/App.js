@@ -1,8 +1,12 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { routes } from '../routes'
 import { Routes } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 
-const App = (props) => {
+const App = () => {
+  const state = useSelector((state) => state)
+  const dispatch = useDispatch()
+
   return (
     <React.Fragment>
       {routes.map((route, index) => {

@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { GetFetchQuotes } from '../../../api/fetch'
+import { useSelector, useDispatch } from 'react-redux'
 
 /**
  *
@@ -6,9 +8,27 @@ import React, { useEffect, useState, useRef } from 'react'
  * @returns Content component
  */
 const Content = (props) => {
-  // const signalingSocket = props.socket
+  const state = useSelector((state) => state)
+  const dispatch = useDispatch()
+  console.log(state.roomContents)
+  const [contents, setContents] = useState([])
 
-  // signalingSocket.on('connect', () => {})
+  useEffect(() => {
+    GetFetchQuotes({
+      uri: 'http://localhost:4001/roomList',
+      msg: 'GET current Room Contents information',
+    }).then((result) => {
+      console.log(result)
+      setContents(result)
+    })
+  }, [state.roomContents])
+
+  const signalingSocket = props.socket
+
+  signalingSocket.on('aaa', (data) => {
+    console.log(data)
+    console.log('받음')
+  })
 
   const joinRoom = (event) => {
     console.log('join room')
@@ -19,6 +39,9 @@ const Content = (props) => {
   return (
     <div className='content'>
       <form onSubmit={joinRoom}>
+        {contents.map((el, idx) => {
+          return <div key={idx}>{el.title}</div>
+        })}
         <label>Dummy thumbnail</label>
         <br />
         <label>Dummy content title</label>

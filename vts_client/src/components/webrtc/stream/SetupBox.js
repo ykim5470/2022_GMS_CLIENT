@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+
+import { roomAdd } from '../../../redux/thunk'
 
 import { PostFetchQuotes } from '../../../api/fetch'
 import DetectRTC from 'detectrtc'
@@ -19,6 +22,7 @@ let isRecScreenSream = false
  * @returns SetupBox component
  */
 const SetupBox = (props) => {
+  const dispatch = useDispatch()
   const signalingSocket = props.socket
   let { id } = useParams()
   const roomId = id
@@ -44,6 +48,7 @@ const SetupBox = (props) => {
     formData.append('thumbNail', thumbNail)
     formData.append('title', roomTitle)
     formData.append('host', roomHost)
+    formData.append('roomId', roomId)
 
     PostFetchQuotes({
       uri: 'http://localhost:4001/roomCreate',
@@ -66,6 +71,8 @@ const SetupBox = (props) => {
       peer_hand: myHandStatus, // myHandStatus
       peer_rec: isRecScreenSream, // isRecScreenStream
     })
+
+    dispatch(roomAdd())
 
     event.preventDefault()
   }

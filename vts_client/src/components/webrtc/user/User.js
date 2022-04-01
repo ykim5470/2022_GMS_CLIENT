@@ -1,25 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { io } from 'socket.io-client'
-// import { io } from 'socket.io-client'
+import { useSelector, useDispatch } from 'react-redux'
 
 import Content from './Content'
 
-const signalingServerPort = 4001
-const signalingServer = 'http://localhost:4001'
-
-let a = io(signalingServer)
-console.log(a)
-
 const User = () => {
-  // io.on('connect', () => {
-  //   let myPeerId = io.id
-  //   console.log('User peer id [ ' + myPeerId + ' ]')
-  // })
+  const state = useSelector((state) => state)
+
+  state.signalingSocket.on('connect', () => {
+    let myPeerId = state.signalingSocket.id
+    console.log('User peer id [ ' + myPeerId + ' ]')
+  })
 
   return (
     <div className='user'>
-      <Content />
+      <Content socket={state.signalingSocket} />
     </div>
   )
 }

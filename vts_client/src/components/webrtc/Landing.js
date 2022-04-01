@@ -10,7 +10,8 @@ const Landing = ({ match, location, history }) => {
       uri: 'http://localhost:4001/joinRoom',
       msg: 'Get Randome room ID',
     }).then((result) => {
-      return navigate(`/stream/${result.data.roomId}`)
+      console.log(result)
+      return navigate(`/stream/${result.data}`)
     })
   }
 
