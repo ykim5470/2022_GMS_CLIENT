@@ -8,8 +8,8 @@ const compression = require('compression')
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
-const multer = require('multer')
-const upload = multer({ dest: 'uploads/' })
+const { sequelize } = require('../../models')
+const apiHandler = require('./apis/index')
 const app = express()
 
 const Logger = require('./Logger')
@@ -37,6 +37,15 @@ io = new Server({
   },
 }).listen(server)
 
+sequelize
+  .sync({ force: false })
+  .then(() => {
+    console.log('Database connected')
+  })
+  .catch((err) => {
+    console.log(err)
+  })
+
 // Swagger config
 const yamlJS = require('yamljs')
 const swaggerUi = require('swagger-ui-express')
@@ -45,7 +54,6 @@ const swaggerDocument = yamlJS.load(
 )
 
 // Api config
-const { v4: uuidV4 } = require('uuid')
 const apiBasePath = '/api/v1' // api endpoint path
 const api_docs = host + apiBasePath + '/docs' // api docs
 const api_key_secret = process.env.API_KEY_SECRET || 'mirotalk_default_secret'
@@ -64,30 +72,7 @@ app.use(cors()) // Enable All CORS Requests for all origins
 app.use(compression()) // Compress all HTTP responses using GZip
 app.use(express.json()) // Api parse body data as json
 
-app.get('/joinRoom', (req, res) => {
-  try {
-    console.log('받음')
-    return res.send({
-      data: {
-        roomId: uuidV4(),
-      },
-    })
-  } catch (err) {
-    return res.send({
-      err: {
-        code: 404,
-        msg: err,
-      },
-    })
-  }
-})
-
-app.post('/roomCreate', upload.single('thumbNail'), (req, res) => {
-  req.header('Access-Control-Allow-Origin', '*')
-  // console.log(req.body)
-  // console.log(req.file)
-  // console.log(req.headers)
-})
+app.use('/', apiHandler)
 
 const iceServers = [
   {
