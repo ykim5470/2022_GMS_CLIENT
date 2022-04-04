@@ -30,10 +30,10 @@ io = new Server({
   maxHttpBufferSize: 1e7,
   pingTimeout: 60000,
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'http://a6ae-211-171-1-210.ngrok.io',
     methods: ['GET', 'POST'],
     allowedHeaders: ['my-custom-header'],
-    credentials: true,
+    // credentials: true,
   },
 }).listen(server)
 
