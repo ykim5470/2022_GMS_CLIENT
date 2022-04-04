@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { GetFetchQuotes } from '../../../api/fetch'
 import { useSelector, useDispatch } from 'react-redux'
+import { roomAdd } from '../../../redux/thunk'
 
 /**
  *
@@ -8,14 +10,23 @@ import { useSelector, useDispatch } from 'react-redux'
  * @returns Content component
  */
 const Content = (props) => {
+  console.log('-aaaaa')
+  const navigate = useNavigate()
+
   const state = useSelector((state) => state)
   const dispatch = useDispatch()
-  console.log(state.roomContents)
   const [contents, setContents] = useState([])
+
+  const joinRoom = (e) => {
+    const roomId = e.target.value
+    navigate(roomId)
+
+    e.preventDefault()
+  }
 
   useEffect(() => {
     GetFetchQuotes({
-      uri: 'http://localhost:4001/roomList',
+      uri: 'http://88d1-211-171-1-210.ngrok.io/roomList',
       msg: 'GET current Room Contents information',
     }).then((result) => {
       console.log(result)
@@ -23,32 +34,21 @@ const Content = (props) => {
     })
   }, [state.roomContents])
 
-  const signalingSocket = props.socket
-
-  signalingSocket.on('aaa', (data) => {
-    console.log(data)
-    console.log('받음')
-  })
-
-  const joinRoom = (event) => {
-    console.log('join room')
-
-    event.preventDefault()
-  }
-
   return (
     <div className='content'>
-      <form onSubmit={joinRoom}>
-        {contents.map((el, idx) => {
-          return <div key={idx}>{el.title}</div>
-        })}
-        <label>Dummy thumbnail</label>
-        <br />
-        <label>Dummy content title</label>
-        <br />
-
-        <input type='submit' value='join' />
-      </form>
+      {contents.map((el, idx) => {
+        return (
+          <form key={idx}>
+            <div>
+              {el.title}
+              <br />
+              <button type='button' onClick={joinRoom} value={el.roomId}>
+                join
+              </button>
+            </div>
+          </form>
+        )
+      })}
     </div>
   )
 }

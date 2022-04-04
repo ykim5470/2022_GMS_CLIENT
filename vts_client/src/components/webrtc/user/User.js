@@ -7,14 +7,9 @@ import Content from './Content'
 const User = () => {
   const state = useSelector((state) => state)
 
-  state.signalingSocket.on('connect', () => {
-    let myPeerId = state.signalingSocket.id
-    console.log('User peer id [ ' + myPeerId + ' ]')
-  })
-
   return (
     <div className='user'>
-      <Content socket={state.signalingSocket} />
+      <Content />
     </div>
   )
 }

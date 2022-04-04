@@ -11,6 +11,8 @@ const Stream = () => {
   const state = useSelector((state) => state)
   const dispatch = useDispatch()
 
+  let localMediaStream
+
   // Room Id from url params
   let { id } = useParams()
 
@@ -23,14 +25,23 @@ const Stream = () => {
     console.log('Streamer peer id [ ' + myPeerId + ' ]')
   })
 
-  state.signalingSocket.on('user', (data) => {
-    console.log(data)
-  })
+  function setupLocalMedia(callback, errorback) {
+    if (localMediaStream != null) {
+      if (callback) callback()
+      return
+    }
+    console.log('Requesting access to local audio / video inputs')
+    navigator.mediaDevices.getUserMedia()
+  }
 
   return (
     <div className='stream'>
-      <SetupBox socket={state.signalingSocket} />
-      <Media />
+      if(localMediaStream){<SetupBox socket={state.signalingSocket} />}
+      else
+      {setupLocalMedia(() => {
+        whoAreYou()
+      })}
+      <Media socket={state.signalingSocket} />
       <FeatureBar />
       <ChatBox />
     </div>

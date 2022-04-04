@@ -7,7 +7,7 @@ const Landing = ({ match, location, history }) => {
 
   const joinRoom = () => {
     GetFetchQuotes({
-      uri: 'http://localhost:4001/joinRoom',
+      uri: 'http://88d1-211-171-1-210.ngrok.io/joinRoom',
       msg: 'Get Randome room ID',
     }).then((result) => {
       console.log(result)
