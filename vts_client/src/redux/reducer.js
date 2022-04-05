@@ -1,7 +1,8 @@
 import { io } from 'socket.io-client'
 
 const signalingServerPort = 4001
-const signalingServer = 'http://88d1-211-171-1-210.ngrok.io'
+// const signalingServer = 'https://dbd6-211-171-1-210.ngrok.io'
+const signalingServer = 'http://localhost:4001'
 
 let signalingSocket = io(signalingServer, {
   // withCredentials: true,
@@ -16,6 +17,7 @@ const initialState = {
   signalingSocket: signalingSocket,
   roomContents: 0,
   testNum: 1,
+  localMediaStream: null,
 }
 
 // reducers
@@ -29,6 +31,8 @@ export const rootReducer = (state = initialState, action) => {
       return { ...state, roomContents: action.payload }
     case 'test_update':
       return { ...state, testNum: action.payload }
+    case 'set_local_media_stream':
+      return { ...state, localMediaStream: action.payload }
     default:
       return state
   }

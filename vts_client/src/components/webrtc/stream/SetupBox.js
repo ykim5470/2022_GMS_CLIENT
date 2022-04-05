@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { roomAdd, testUpdate } from '../../../redux/thunk'
+import { roomAdd, updateLocalMedia } from '../../../redux/thunk'
 
 import { PostFetchQuotes } from '../../../api/fetch'
 import DetectRTC from 'detectrtc'
@@ -15,6 +15,29 @@ let myVideoStatus = true
 let myAudioStatus = true
 let myHandStatus = false
 let isRecScreenSream = false
+let videoMaxFrameRate = 30
+
+const videoConstraints = getVideoConstraints('default')
+const constraints = {
+  audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    sampleRate: 44100,
+  },
+  video: videoConstraints,
+}
+
+/**
+ *
+ * @returns video constraints
+ */
+function getVideoConstraints(videoQuality) {
+  let frameRate = { max: videoMaxFrameRate }
+  switch (videoQuality) {
+    case 'default':
+      return { frameRate: frameRate }
+  }
+}
 
 /**
  *
@@ -33,11 +56,21 @@ const SetupBox = (props) => {
 
   useEffect(() => {
     getPeerGeoLocation()
+    // navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+    //   console.log('Access granted to audio/video')
+    //   return dispatch(updateLocalMedia(stream))
+    // })
   }, [])
 
   const onFileChange = (e) => {
     setThumbNail(e.target.files[0])
   }
+
+  // navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+  //   console.log('Access granted to audio/video')
+  //   return dispatch(updateLocalMedia(stream))
+  // })
+  // return setLocalMediaStream(stream)
 
   /**
    * Audio & Meida setup done correctly
@@ -52,7 +85,8 @@ const SetupBox = (props) => {
     formData.append('roomId', roomId)
 
     PostFetchQuotes({
-      uri: 'http://88d1-211-171-1-210.ngrok.io/roomCreate',
+      // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomCreate',
+      uri: 'http://localhost:4001/roomCreate',
       body: formData,
       msg: 'Create Room',
     })
@@ -73,6 +107,10 @@ const SetupBox = (props) => {
       peer_rec: isRecScreenSream, // isRecScreenStream
     })
     dispatch(roomAdd())
+    navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+      console.log('Access granted to audio/video')
+      return dispatch(updateLocalMedia(stream))
+    })
 
     event.preventDefault()
   }

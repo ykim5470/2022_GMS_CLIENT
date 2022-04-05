@@ -23,7 +23,7 @@ const routes = [
   {
     path: '/stream/:id',
     name: 'Stream',
-    // exact: true,
+    exact: true,
     component: Stream,
     route: Route,
   },

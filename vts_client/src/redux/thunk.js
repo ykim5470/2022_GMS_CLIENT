@@ -10,3 +10,7 @@ export const roomAdd = () => async (dispatch, getState) => {
 export const testUpdate = () => async (dispatch, getState) => {
   dispatch({ type: 'test_update', payload: getState().testNum + 1 })
 }
+
+export const updateLocalMedia = (stream) => async (dispatch, getState) => {
+  dispatch({ type: 'set_local_media_stream', payload: stream })
+}

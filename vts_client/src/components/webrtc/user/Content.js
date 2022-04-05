@@ -26,7 +26,8 @@ const Content = (props) => {
 
   useEffect(() => {
     GetFetchQuotes({
-      uri: 'http://88d1-211-171-1-210.ngrok.io/roomList',
+      // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomList',
+      uri: 'http://localhost:4001/roomList',
       msg: 'GET current Room Contents information',
     }).then((result) => {
       console.log(result)
