@@ -1,137 +1,91 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
+import DetectRTC from 'detectrtc'
+import { toHaveDescription } from '@testing-library/jest-dom/dist/matchers'
 
-let peerConnection
-let peerConnections = {}
-let localMediaStream
+const peerLoockupUrl = 'https://extreme-ip-lookup.com/json/?key=demo2'
+
+const peerInfo = getPeerInfo()
+let peerGeo
+let myVideoStatus = false
+let myAudioStatus = false
+let isRecScreenSream = false
+
+// let peerConnection
+// let peerConnections = {}
+// let remoteMediaStream
 
 const View = () => {
   const state = useSelector((state) => state)
+  const [myPeerId, setMyPeerId] = useState('')
+  const [stateRemoteStream, setStateRemoteStream] = useState({})
+  // const [peerConnection, setPeerConnection] = useState('')
+  // const [peerConnections, setPeerConnections] = useState({})
+  const description = useRef({})
+  const peerConnection = useRef({})
+  const peerConnections = useRef({})
+  const videoRef = useRef({})
+
   const { id } = useParams()
   const roomId = id
-  console.log(roomId)
 
-  state.signalingSocket.on('connect', () => {
-    let myPeerId = state.signalingSocket.id
-    console.log('User peer id [ ' + myPeerId + ' ]')
-  })
-
-  state.signalingSocket.emit('join', {
-    channel: roomId,
-    peer_info: {
-      detectRTCversion: '1.4.1',
-      isWebRTCSupported: true,
-      isMobileDevice: false,
-      osName: 'Mac OS X',
-      osVersion: '10_15_7',
-      browserName: 'Chrome',
-      browserVersion: 99,
-    },
-    peer_role: 'user1',
-    peer_geo: {
-      businessName: '',
-      businessWebsite: '',
-      city: 'Seoul',
-      continent: 'Asia',
-      country: 'South Korea',
-      countryCode: 'KR',
-      ipName: '',
-      ipType: 'Residential',
-      isp: 'LG DACOM Corporation',
-      lat: '37.566',
-      lon: '126.9784',
-      message:
-        'Important: API Key required, please get your API Key at https://extreme-ip-lookup.com',
-      org: 'LG DACOM Corporation',
-      query: '106.241.28.11',
-      region: 'Seoul',
-      status: 'success',
-      timezone: 'Asia/Seoul',
-      utcOffset: '+09:00',
-    },
-    peer_name: 'user1',
-    peer_video: false,
-    peer_audio: false,
-    peer_hand: false,
-    peer_rec: false,
-  })
-
-  state.signalingSocket.on('addPeer', handleAddPeer)
-  state.signalingSocket.on('iceCandidate', handleIceCandidate)
-  state.signalingSocket.on('sessionDescription', handleSessionDescription)
+  useEffect(() => {
+    getPeerGeoLocation()
+    setMyPeerId(state.signalingSocket.id)
+    if (Object.keys(stateRemoteStream).length !== 0) {
+      console.log(stateRemoteStream)
+      videoRef.current.srcObject = stateRemoteStream
+    }
+  }, [stateRemoteStream])
 
   /**
-   * When we join a group, our signaling server will send out 'addPeer' events to each pair of users in the group (creating a fully-connected graph of users,
-   * ie if there are 6 people in the channel you will connect directly to the other 5, so there will be a total of 15 connections in the network).
-   *
-   * @param {*} config
+   * handleConnect
+   * join to channel and send some peer info
    */
-  function handleAddPeer(config) {
-    // console.log("addPeer", JSON.stringify(config));
-    console.log('==================active on')
-    let peer_id = config.peer_id
-    let peers = config.peers
-    let should_create_offer = config.should_create_offer
-    let iceServers = config.iceServers
-
-    console.log("This one should be the first one's socket id")
-    console.log(peer_id)
-    console.log(should_create_offer)
-
-    if (peer_id in peerConnections) {
-      // This could happen if the user joins multiple channels where the other peer is also in.
-      console.log('Already connected to peer', peer_id)
-      return
-    }
-
-    // if (!iceServers) iceServers = backupIceServers
-    // console.log('iceServers', iceServers[0])
-
-    // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection
-    peerConnection = new RTCPeerConnection({ iceServers: iceServers })
-    peerConnections[peer_id] = peerConnection
-
-    console.log('-------- user 쪽 rtc instance 확인')
-    console.log(peer_id)
-    console.log(peerConnections)
-
-    if (should_create_offer) handleRtcOffer(peer_id) // 여기 중간에서 작동이 안 됨.
-
-    handlePeersConnectionStatus(peer_id) // 이건 현재 작동 확인 완료
-    // msgerAddPeers(peers);
-    handleOnIceCandidate(peer_id) // 이것도 작동 확인 완료
-    handleOnTrack(peer_id, peers) // 여기까지는 작동이 된다.
-    handleAddTracks(peer_id)
-
-    // handleRTCDataChannels(peer_id);
-
-    // wbUpdate();
-
-    // playSound('addPeer');
+  if (myPeerId !== '') {
+    state.signalingSocket.emit('join', {
+      channel: roomId,
+      peer_info: peerInfo,
+      peer_role: 'user',
+      peer_geo: peerGeo,
+      peer_name: 'user1',
+      peer_video: myVideoStatus,
+      peer_audio: myAudioStatus,
+      peer_hand: false,
+      peer_rec: isRecScreenSream,
+    })
   }
 
   /**
-   * Handle peers connection state
+   * handleAddPeer
    */
-  function handlePeersConnectionStatus(peer_id) {
-    peerConnections[peer_id].onconnectionstatechange = function (event) {
+  state.signalingSocket.on('addPeer', (config) => {
+    const { peer_id, peers, should_create_offer, iceServers } = config
+    console.log('This one should be the first one id')
+    if (peer_id in peerConnections) {
+      console.log('Already connected to peer', peer_id)
+      return
+    }
+    peerConnection.current = new RTCPeerConnection({ iceServers: iceServers })
+
+    peerConnections.current = {
+      [peer_id]: peerConnection.current,
+    }
+
+    // handlePeersConnectionStatus(peer_id)
+    peerConnections.current[peer_id].onconnectionstatechange = function (
+      event,
+    ) {
       const connectionStatus = event.currentTarget.connectionState
       console.log('Connection', {
         peer_id: peer_id,
         connectionStatus: connectionStatus,
       })
     }
-  }
 
-  /**
-   * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/onicecandidate
-   *
-   * @param {*} peer_id
-   */
-  function handleOnIceCandidate(peer_id) {
-    peerConnections[peer_id].onicecandidate = (event) => {
-      console.log('이건 올라와 있나?') // 놉 이건 이벤트 콜백인데...
+    // handlOnIceCandidate(peer_id)
+    peerConnections.current[peer_id].onicecandidate = (event) => {
       if (!event.candidate) return
       state.signalingSocket.emit('relayICE', {
         peer_id: peer_id,
@@ -141,155 +95,114 @@ const View = () => {
         },
       })
     }
-  }
-
-  /**
-   * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/ontrack
-   *
-   * @param {*} peer_id
-   * @param {*} peers
-   */
-  function handleOnTrack(peer_id, peers) {
-    console.log('=====================receive test')
-    console.log(peerConnections)
-    console.log(peer_id)
-
-    peerConnections[peer_id].ontrack = (event) => {
+    // handleOnTrack(peer_id, peers)
+    console.log('=============receive test')
+    peerConnections.current[peer_id].ontrack = (event) => {
       console.log('handleOnTrack', event)
       console.log(event.streams[0])
-      document.getElementById('videos').srcObject = event.streams[0]
+      setStateRemoteStream(event.streams[0])
+      // useEffect(() => {
+      //   videoRef.current.srcObject = event.streams[0]
+      // })
+      // videoRef.current.srcObject = event.streams[0]
     }
-  }
+  })
 
-  /**
-   * https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addTrack
-   *
-   * @param {*} peer_id
-   */
-  function handleAddTracks(peer_id) {
-    console.log('방 생성자는 있으니까 이건 되겠지?')
-    return peerConnections[peer_id]
-    // localMediaStream.getTracks().forEach((track) => {
-    //   peerConnections[peer_id].addTrack(track, localMediaStream)
-    // })
-  }
+  state.signalingSocket.on('sessionDescription', (config) => {
+    const { peer_id, session_description } = config
+    console.log(session_description)
+    console.log(session_description.type)
+    console.log(peerConnections.current[peer_id.signalingState])
 
-  /**
-   * Peers exchange session descriptions which contains information about their audio / video settings and that sort of stuff. First
-   * the 'offerer' sends a description to the 'answerer' (with type "offer"), then the answerer sends one back (with type "answer").
-   *
-   * @param {*} config
-   */
-  function handleSessionDescription(config) {
-    console.log('이건? 되나?') // 안 됨
-    console.log('Remote Session Description', config)
+    if (peerConnections.current[peer_id].signalingState !== undefined) {
+      description.current = new RTCSessionDescription(session_description)
 
-    let peer_id = config.peer_id
-    let remote_description = config.session_description
+      if (peerConnections.current[peer_id].signalingState === 'stable') return
 
-    // https://developer.mozilla.org/en-US/docs/Web/API/RTCSessionDescription
-    let description = new RTCSessionDescription(remote_description)
-
-    // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setRemoteDescription
-    peerConnections[peer_id]
-      .setRemoteDescription(description)
-      .then(() => {
-        console.log('setRemoteDescription done!')
-        if (remote_description.type == 'offer') {
-          console.log('Creating answer')
-          // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer
-          peerConnections[peer_id]
-            .createAnswer()
-            .then((local_description) => {
-              console.log('Answer description is: ', local_description)
-              // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setLocalDescription
-              peerConnections[peer_id]
-                .setLocalDescription(local_description)
-                .then(() => {
-                  state.signalingSocket.emit('relaySDP', {
-                    peer_id: peer_id,
-                    session_description: local_description,
+      console.log('여긴 와야지')
+      peerConnections.current[peer_id]
+        .setRemoteDescription(description.current)
+        .then(() => {
+          console.log('setRemoteDescription done!')
+          if (session_description.type === 'offer') {
+            console.log('Creating answer')
+            peerConnections.current[peer_id]
+              .createAnswer()
+              .then((local_description) => {
+                console.log('Answer description is: ', local_description)
+                console.log(peerConnections.current[peer_id])
+                peerConnections.current[peer_id]
+                  .setLocalDescription(local_description)
+                  .then(() => {
+                    state.signalingSocket.emit('relaySDP', {
+                      peer_id: peer_id,
+                      session_description: local_description,
+                    })
+                    console.log('Answer setLocalDescription done!')
+                    return
                   })
-                  console.log('Answer setLocalDescription done!')
-                })
-                .catch((err) => {
-                  console.error('[Error] answer setLocalDescription', err)
-                  // userLog('error', 'Answer setLocalDescription failed ' + err)
-                })
-            })
-            .catch((err) => {
-              console.error('[Error] creating answer', err)
-            })
-        } // end [if type offer]
-      })
-      .catch((err) => {
-        console.error('[Error] setRemoteDescription', err)
-      })
-  }
-
-  /**
-   * Only one side of the peer connection should create the offer, the signaling server picks one to be the offerer.
-   * The other user will get a 'sessionDescription' event and will create an offer, then send back an answer 'sessionDescription' to us
-   *
-   * @param {*} peer_id
-   */
-  function handleRtcOffer(peer_id) {
-    console.log('여기까지 가기는 하는가?') // ㅇㅇ 그러나 이 다음이 안 된다.
-    // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/onnegotiationneeded
-    peerConnections[peer_id].onnegotiationneeded = async () => {
-      console.log('Creating RTC offer to', peer_id)
-      // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createOffer
-      await peerConnections[peer_id]
-        .createOffer()
-        .then((local_description) => {
-          console.log('Local offer description is', local_description)
-          // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/setLocalDescription
-          peerConnections[peer_id]
-            .setLocalDescription(local_description)
-            .then(() => {
-              state.signalingSocket.emit('relaySDP', {
-                peer_id: peer_id,
-                session_description: local_description,
+                  .catch((err) => {
+                    console.error('[Error] answer setLocalDescription', err)
+                  })
               })
-              console.log('Offer setLocalDescription done!')
-            })
-            .catch((err) => {
-              console.error('[Error] offer setLocalDescription', err)
-              // userLog('error', 'Offer setLocalDescription failed ' + err)
-            })
+              .catch((err) => {
+                console.error('[Error] creating answer', err)
+              })
+          }
         })
         .catch((err) => {
-          console.error('[Error] sending offer', err)
+          console.error('[Error] setRemoteDescription', err)
         })
+    } else {
+      return
     }
-  }
+  })
 
-  /**
-   * The offerer will send a number of ICE Candidate blobs to the answerer so they
-   * can begin trying to find the best path to one another on the net.
-   *
-   * @param {*} config
-   */
-  function handleIceCandidate(config) {
-    console.log('user먼저 접속 테스트에서는 ice candidate exchange가 되나?')
-    let peer_id = config.peer_id
-    let ice_candidate = config.ice_candidate
-    console.log(
-      '이 peer는 상대편 peer인 걸까? 아니면 사용자 peer인 걸까? 누가 먼저지?',
-    )
-    console.log(peer_id) // 상대편
-    console.log(ice_candidate) // 뭔가 정보가 있음 = streamer가 ice layer를 최초로 build start하는 것이 맞음.
-    // https://developer.mozilla.org/en-US/docs/Web/API/RTCIceCandidate
-    peerConnections[peer_id]
+  state.signalingSocket.on('iceCandidate', (config) => {
+    const { peer_id, ice_candidate } = config
+    peerConnections.current[peer_id]
       .addIceCandidate(new RTCIceCandidate(ice_candidate))
       .catch((err) => {
         console.error('[Error] addIceCandidate', err)
       })
-  }
+  })
 
-  useEffect(() => {})
-
-  return <div className='user'>view page</div>
+  return (
+    <div className='user'>
+      view page
+      <video ref={videoRef} autoPlay playsInline muted />
+    </div>
+  )
 }
 
 export default View
+
+/**
+ * Get peer info using DetecRTC
+ * https://github.com/muaz-khan/DetectRTC
+ * @returns Obj peer info
+ */
+function getPeerInfo() {
+  return {
+    detectRTCversion: DetectRTC.version,
+    isWebRTCSupported: DetectRTC.isWebRTCSupported,
+    isMobileDevice: DetectRTC.isMobileDevice,
+    osName: DetectRTC.osName,
+    osVersion: DetectRTC.osVersion,
+    browserName: DetectRTC.browser.name,
+    browserVersion: DetectRTC.browser.version,
+  }
+}
+
+/**
+ * Get approximative peer geolocation
+ * @returns json
+ */
+function getPeerGeoLocation() {
+  fetch(peerLoockupUrl)
+    .then((res) => res.json())
+    .then((outJson) => {
+      peerGeo = outJson
+    })
+    .catch((err) => console.error(err))
+}
