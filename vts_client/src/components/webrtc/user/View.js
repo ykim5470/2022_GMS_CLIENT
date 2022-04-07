@@ -18,8 +18,9 @@ let isRecScreenSream = false
 
 const View = () => {
   const state = useSelector((state) => state)
-  const [myPeerId, setMyPeerId] = useState('')
-  const [stateRemoteStream, setStateRemoteStream] = useState({})
+  // const [myPeerId, setMyPeerId] = useState('')
+  const myPeerId = useRef({})
+  // const [stateRemoteStream, setStateRemoteStream] = useState({})
   // const [peerConnection, setPeerConnection] = useState('')
   // const [peerConnections, setPeerConnections] = useState({})
   const description = useRef({})
@@ -32,18 +33,6 @@ const View = () => {
 
   useEffect(() => {
     getPeerGeoLocation()
-    setMyPeerId(state.signalingSocket.id)
-    if (Object.keys(stateRemoteStream).length !== 0) {
-      console.log(stateRemoteStream)
-      videoRef.current.srcObject = stateRemoteStream
-    }
-  }, [stateRemoteStream])
-
-  /**
-   * handleConnect
-   * join to channel and send some peer info
-   */
-  if (myPeerId !== '') {
     state.signalingSocket.emit('join', {
       channel: roomId,
       peer_info: peerInfo,
@@ -55,91 +44,102 @@ const View = () => {
       peer_hand: false,
       peer_rec: isRecScreenSream,
     })
-  }
 
-  /**
-   * handleAddPeer
-   */
-  state.signalingSocket.on('addPeer', (config) => {
-    const { peer_id, peers, should_create_offer, iceServers } = config
-    console.log('This one should be the first one id')
-    if (peer_id in peerConnections) {
-      console.log('Already connected to peer', peer_id)
-      return
-    }
-    peerConnection.current = new RTCPeerConnection({ iceServers: iceServers })
+    /**
+     * handleAddPeer
+     */
+    state.signalingSocket.on('addPeer', (config) => {
+      const { peer_id, peers, should_create_offer, iceServers } = config
+      console.log(config)
+      console.log('This one should be the first one id')
+      if (peer_id in peerConnections) {
+        console.log('Already connected to peer', peer_id)
+        return
+      }
+      peerConnection.current = new RTCPeerConnection({ iceServers: iceServers })
 
-    peerConnections.current = {
-      [peer_id]: peerConnection.current,
-    }
+      peerConnections.current = {
+        [peer_id]: peerConnection.current,
+      }
 
-    // handlePeersConnectionStatus(peer_id)
-    peerConnections.current[peer_id].onconnectionstatechange = function (
-      event,
-    ) {
-      const connectionStatus = event.currentTarget.connectionState
-      console.log('Connection', {
-        peer_id: peer_id,
-        connectionStatus: connectionStatus,
-      })
-    }
+      // handlePeersConnectionStatus(peer_id)
+      peerConnections.current[peer_id].onconnectionstatechange = function (
+        event,
+      ) {
+        const connectionStatus = event.currentTarget.connectionState
+        console.log('Connection', {
+          peer_id: peer_id,
+          connectionStatus: connectionStatus,
+        })
+      }
 
-    // handlOnIceCandidate(peer_id)
-    peerConnections.current[peer_id].onicecandidate = (event) => {
-      if (!event.candidate) return
-      state.signalingSocket.emit('relayICE', {
-        peer_id: peer_id,
-        ice_candidate: {
-          sdpMLineIndex: event.candidate.sdpMLineIndex,
-          candidate: event.candidate.candidate,
-        },
-      })
-    }
-    // handleOnTrack(peer_id, peers)
-    console.log('=============receive test')
-    peerConnections.current[peer_id].ontrack = (event) => {
-      console.log('handleOnTrack', event)
-      console.log(event.streams[0])
-      setStateRemoteStream(event.streams[0])
-      // useEffect(() => {
-      //   videoRef.current.srcObject = event.streams[0]
-      // })
-      // videoRef.current.srcObject = event.streams[0]
-    }
-  })
+      // handlOnIceCandidate(peer_id)
+      peerConnections.current[peer_id].onicecandidate = (event) => {
+        if (!event.candidate) return
+        state.signalingSocket.emit('relayICE', {
+          peer_id: peer_id,
+          ice_candidate: {
+            sdpMLineIndex: event.candidate.sdpMLineIndex,
+            candidate: event.candidate.candidate,
+          },
+        })
+      }
+      // handleOnTrack(peer_id, peers)
+      console.log('=============receive test')
+      peerConnections.current[peer_id].ontrack = (event) => {
+        console.log('handleOnTrack', event)
+        console.log(event.streams[0])
+        // setStateRemoteStream(event.streams[0])
+        // useEffect(() => {
+        //   videoRef.current.srcObject = event.streams[0]
+        // })
+        videoRef.current.srcObject = event.streams[0]
+      }
+    })
 
-  state.signalingSocket.on('sessionDescription', (config) => {
-    const { peer_id, session_description } = config
-    console.log(session_description)
-    console.log(session_description.type)
-    console.log(peerConnections.current[peer_id.signalingState])
+    // handleAddPeer
+    state.signalingSocket.on('iceCandidate', (config) => {
+      const { peer_id, ice_candidate } = config
+      peerConnections.current[peer_id]
+        .addIceCandidate(new RTCIceCandidate(ice_candidate))
+        .catch((err) => {
+          console.error('[Error] addIceCandidate', err)
+        })
+    })
 
-    if (peerConnections.current[peer_id].signalingState !== undefined) {
-      description.current = new RTCSessionDescription(session_description)
+    state.signalingSocket.on('sessionDescription', (config) => {
+      const { peer_id, session_description } = config
+      console.log(session_description)
+      console.log(session_description.type)
+      console.log(peerConnections.current[peer_id].signalingState)
 
-      if (peerConnections.current[peer_id].signalingState === 'stable') return
+      let description = new RTCSessionDescription(session_description)
 
       console.log('여긴 와야지')
       peerConnections.current[peer_id]
-        .setRemoteDescription(description.current)
+        .setRemoteDescription(description)
         .then(() => {
           console.log('setRemoteDescription done!')
-          if (session_description.type === 'offer') {
+          if (session_description.type == 'offer') {
             console.log('Creating answer')
             peerConnections.current[peer_id]
               .createAnswer()
               .then((local_description) => {
                 console.log('Answer description is: ', local_description)
                 console.log(peerConnections.current[peer_id])
+
                 peerConnections.current[peer_id]
                   .setLocalDescription(local_description)
                   .then(() => {
-                    state.signalingSocket.emit('relaySDP', {
-                      peer_id: peer_id,
-                      session_description: local_description,
-                    })
-                    console.log('Answer setLocalDescription done!')
-                    return
+                    {
+                      state.signalingSocket.emit('relaySDP', {
+                        peer_id: peer_id,
+                        session_description: local_description,
+                      })
+                      console.log('Answer setLocalDescription done!')
+                      return
+                    }
+                    // console.log(result) // check local answer sdp is called in wrong state : stable
                   })
                   .catch((err) => {
                     console.error('[Error] answer setLocalDescription', err)
@@ -153,19 +153,23 @@ const View = () => {
         .catch((err) => {
           console.error('[Error] setRemoteDescription', err)
         })
-    } else {
-      return
-    }
-  })
+    })
 
-  state.signalingSocket.on('iceCandidate', (config) => {
-    const { peer_id, ice_candidate } = config
-    peerConnections.current[peer_id]
-      .addIceCandidate(new RTCIceCandidate(ice_candidate))
-      .catch((err) => {
-        console.error('[Error] addIceCandidate', err)
-      })
-  })
+    // setMyPeerId(state.signalingSocket.id)
+    // myPeerId.current = state.signalingSocket.id
+    // if (Object.keys(stateRemoteStream).length !== 0) {
+    //   console.log(stateRemoteStream)
+    //   videoRef.current.srcObject = stateRemoteStream
+    // }
+  }, [])
+
+  /**
+   * handleConnect
+   * join to channel and send some peer info
+   */
+  // if (myPeerId.current !== '') {
+
+  // }
 
   return (
     <div className='user'>
