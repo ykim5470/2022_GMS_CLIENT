@@ -1,28 +1,27 @@
+const { UUIDV4 } = require('sequelize')
 const Sequelize = require('sequelize')
 module.exports = class Channel extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
-        id: {
-          type: Sequelize.INTEGER,
-          autoIncrement: true,
+        Id: {
+          type: Sequelize.STRING,
+          allowNull: true,
+          defaultValue: UUIDV4,
+        },
+        RoomId: {
+          type: Sequelize.STRING,
+          allowNull: false,
           primaryKey: true,
         },
-        title: {
-          type: Sequelize.STRING,
-          allowNull: false,
+        AirTime: {
+          type: Sequelize.TIME,
+          allowNull: true,
         },
-        host: {
-          type: Sequelize.STRING,
-          allowNull: false,
-        },
-        roomId: {
-          type: Sequelize.STRING,
-          allowNull: false,
-        },
-        thumbnail: {
-          type: Sequelize.STRING,
-          allowNull: false,
+        IsActivate: {
+          type: Sequelize.BOOLEAN,
+          allowNull: true,
+          defaultValue: true,
         },
       },
       {
@@ -30,7 +29,7 @@ module.exports = class Channel extends Sequelize.Model {
         timestamps: true,
         underscored: false,
         modelName: 'Channel',
-        tableName: 'channel',
+        tableName: 'Channel',
         paranoid: true,
         charset: 'utf8',
         collate: 'utf8_general_ci',

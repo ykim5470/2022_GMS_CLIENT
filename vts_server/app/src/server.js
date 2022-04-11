@@ -4,6 +4,7 @@ require('dotenv').config
 
 const { Server } = require('socket.io')
 const http = require('http')
+const https = require('https')
 const compression = require('compression')
 const express = require('express')
 const cors = require('cors')
@@ -16,11 +17,33 @@ const Logger = require('./Logger')
 const log = new Logger('server')
 
 const port = process.env.PORT || 4001 // must be the same to client.js signalingServerPort
+const isHttps = true
 
 let io, server, host
 
-server = http.createServer(app)
-host = 'http://' + 'localhost' + ':' + port
+if (isHttps) {
+  const fs = require('fs')
+  const options = {
+    key: fs.readFileSync(
+      path.join(__dirname, '../ssl/enjoystreet.com_20210630C19D.key.pem'),
+      'utf-8',
+    ),
+    cert: fs.readFileSync(
+      path.join(__dirname, '../ssl/enjoystreet.com_20210630C19D.crt.pem'),
+      'utf-8',
+    ),
+    ca: fs.readFileSync(
+      path.join(__dirname, '../ssl/enjoystreet.com_20210630C19D.ca-bundle.pem'),
+      'utf-8',
+    ),
+  }
+
+  server = https.createServer(options, app)
+  host = 'https://' + 'localhost' + ':' + port
+} else {
+  server = http.createServer(app)
+  host = 'https://' + 'localhost' + ':' + port
+}
 
 /*  
     Set maxHttpBufferSize from 1e6 (1MB) to 1e7 (10MB)
@@ -30,7 +53,7 @@ io = new Server({
   maxHttpBufferSize: 1e7,
   pingTimeout: 60000,
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'https://106.255.237.50:3000',
     methods: ['GET', 'POST'],
     allowedHeaders: ['my-custom-header'],
     credentials: true,
@@ -47,11 +70,7 @@ sequelize
   })
 
 // Swagger config
-const yamlJS = require('yamljs')
-const swaggerUi = require('swagger-ui-express')
-const swaggerDocument = yamlJS.load(
-  path.join(__dirname + '/../api/swagger.yaml'),
-)
+const { swaggerUi, specs } = require('../api/swagger')
 
 // Api config
 const apiBasePath = '/api/v1' // api endpoint path
@@ -71,6 +90,7 @@ let peers = {} // collect peers info grp by channels
 app.use(cors()) // Enable All CORS Requests for all origins
 app.use(compression()) // Compress all HTTP responses using GZip
 app.use(express.json()) // Api parse body data as json
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs)) // Swagger API documentation
 
 app.use('/', apiHandler)
 
