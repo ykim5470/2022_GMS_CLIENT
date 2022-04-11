@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
-import { roomAdd } from '../../../redux/thunk'
+import { roomAdd, updateLocalMedia } from '../../../redux/thunk'
 
 import { PostFetchQuotes } from '../../../api/fetch'
 import DetectRTC from 'detectrtc'
@@ -15,6 +15,29 @@ let myVideoStatus = true
 let myAudioStatus = true
 let myHandStatus = false
 let isRecScreenSream = false
+let videoMaxFrameRate = 30
+
+const videoConstraints = getVideoConstraints('default')
+const constraints = {
+  audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    sampleRate: 44100,
+  },
+  video: videoConstraints,
+}
+
+/**
+ *
+ * @returns video constraints
+ */
+function getVideoConstraints(videoQuality) {
+  let frameRate = { max: videoMaxFrameRate }
+  switch (videoQuality) {
+    case 'default':
+      return { frameRate: frameRate }
+  }
+}
 
 /**
  *
@@ -22,21 +45,38 @@ let isRecScreenSream = false
  * @returns SetupBox component
  */
 const SetupBox = (props) => {
+  const state = useSelector((state) => state)
   const dispatch = useDispatch()
   const signalingSocket = props.socket
-  let { id } = useParams()
+  const { id } = useParams()
   const roomId = id
   const [thumbNail, setThumbNail] = useState(null)
   const [roomTitle, setRoomTitle] = useState('')
   const [roomHost, setRoomHost] = useState('')
+  const [roomCategory, setRoomCategory] = useState('')
+
+  const [roomStorePath, setRoomStorePath] = useState('')
+  const [roomStoreCategory, setRoomStoreCategory] = useState('')
+  const [roomStoreId, setRoomStoreId] = useState('')
+  const [roomProductId, setRoomProductId] = useState('')
 
   useEffect(() => {
     getPeerGeoLocation()
+    // navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+    //   console.log('Access granted to audio/video')
+    //   return dispatch(updateLocalMedia(stream))
+    // })
   }, [])
 
   const onFileChange = (e) => {
     setThumbNail(e.target.files[0])
   }
+
+  // navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+  //   console.log('Access granted to audio/video')
+  //   return dispatch(updateLocalMedia(stream))
+  // })
+  // return setLocalMediaStream(stream)
 
   /**
    * Audio & Meida setup done correctly
@@ -49,9 +89,16 @@ const SetupBox = (props) => {
     formData.append('title', roomTitle)
     formData.append('host', roomHost)
     formData.append('roomId', roomId)
+    formData.append('roomCategory', roomCategory)
+
+    formData.append('storePath', roomStorePath)
+    formData.append('storeCategory', roomStoreCategory)
+    formData.append('storeId', roomStoreId)
+    formData.append('productId', roomProductId)
 
     PostFetchQuotes({
-      uri: 'http://localhost:4001/roomCreate',
+      // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomCreate',
+      uri: 'https://106.255.237.50:4000/roomCreate',
       body: formData,
       msg: 'Create Room',
     })
@@ -72,7 +119,11 @@ const SetupBox = (props) => {
       peer_rec: isRecScreenSream, // isRecScreenStream
     })
 
-    dispatch(roomAdd())
+    console.log('이건?')
+    navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+      console.log('Access granted to audio/video')
+      return dispatch(updateLocalMedia(stream))
+    })
 
     event.preventDefault()
   }
@@ -111,6 +162,69 @@ const SetupBox = (props) => {
           />
         </label>
         <br />
+        <label>
+          Dummy Room category:{' '}
+          <input
+            type='text'
+            name='roomCategory'
+            value={roomCategory}
+            onChange={(e) => {
+              setRoomCategory(e.target.value)
+            }}
+          />
+        </label>
+        <br />
+        <br />
+
+        <label>
+          Dummy Store path:{' '}
+          <input
+            type='text'
+            name='storePath'
+            value={roomStorePath}
+            onChange={(e) => {
+              setRoomStorePath(e.target.value)
+            }}
+          />
+        </label>
+        <br />
+        <label>
+          Dummy Store category:{' '}
+          <input
+            type='text'
+            name='storeCategory'
+            value={roomStoreCategory}
+            onChange={(e) => {
+              setRoomStoreCategory(e.target.value)
+            }}
+          />
+        </label>
+        <br />
+        <label>
+          Dummy Store Id:{' '}
+          <input
+            type='number'
+            name='storeId'
+            value={roomStoreId}
+            onChange={(e) => {
+              setRoomStoreId(e.target.value)
+            }}
+          />
+        </label>
+        <br />
+        <label>
+          Dummy Store Product Id:{' '}
+          <input
+            type='number'
+            name='productId'
+            value={roomProductId}
+            onChange={(e) => {
+              setRoomProductId(e.target.value)
+            }}
+          />
+        </label>
+        <br />
+
         <input type='submit' value='setup done' />
       </form>
     </div>

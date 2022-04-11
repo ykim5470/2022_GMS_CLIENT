@@ -6,6 +6,7 @@ import { Route } from 'react-router-dom'
 import Landing from './components/webrtc/Landing'
 import Stream from './components/webrtc/stream/Stream'
 import User from './components/webrtc/user/User'
+import View from './components/webrtc/user/View'
 
 const routes = [
   /**
@@ -22,11 +23,18 @@ const routes = [
   {
     path: '/stream/:id',
     name: 'Stream',
-    // exact: true,
+    exact: true,
     component: Stream,
     route: Route,
   },
   { path: '/user', name: 'User', exact: true, component: User, route: Route },
+  {
+    path: '/user/:id',
+    name: 'View',
+    // exact: true,
+    component: View,
+    route: Route,
+  },
 ]
 
 export { routes }

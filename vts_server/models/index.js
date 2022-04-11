@@ -3,9 +3,14 @@ const path = require('path')
 const Sequelize = require('sequelize')
 const env = process.env.NODE_ENV || 'development'
 const config = require('./config')[env]
-const moment = require('moment')
 
 const Channel = require('./webrtc/channel')
+const ChannelSetConfig = require('./webrtc/channel_set_config')
+const ChannelRecordManagementConfig = require('./webrtc/channel_record_management_conifg')
+const ChannelProductConfig = require('./webrtc/channel_product_set_config')
+const ChannelLikeLog = require('./webrtc/channel_like_log')
+const ChannelChatLog = require('./webrtc/channel_chat_log')
+const ChannelConcurrentUserLog = require('./webrtc/channel_ccu_log')
 
 const db = {}
 const sequelize = new Sequelize(
@@ -32,7 +37,47 @@ Object.keys(db).forEach((modelName) => {
 
 db.sequelize = sequelize
 db.Channel = Channel
+db.ChannelSetConfig = ChannelSetConfig
+db.ChannelRecordManagementConfig = ChannelRecordManagementConfig
+db.ChannelProductConfig = ChannelProductConfig
+db.ChannelLikeLog = ChannelLikeLog
+db.ChannelChatLog = ChannelChatLog
+db.ChannelConcurrentUserLog = ChannelConcurrentUserLog
 
 Channel.init(sequelize)
+ChannelSetConfig.init(sequelize)
+ChannelRecordManagementConfig.init(sequelize)
+ChannelProductConfig.init(sequelize)
+ChannelLikeLog.init(sequelize)
+ChannelChatLog.init(sequelize)
+ChannelConcurrentUserLog.init(sequelize)
+
+Channel.hasMany(ChannelSetConfig, {
+  foreignKey: 'RoomId',
+  onDelete: 'cascade',
+})
+
+Channel.hasMany(ChannelRecordManagementConfig, {
+  foreignKey: 'RoomId',
+  onDelete: 'cascade',
+})
+Channel.hasMany(ChannelProductConfig, {
+  foreignKey: 'RoomId',
+  onDelete: 'cascade',
+})
+
+Channel.hasMany(ChannelLikeLog, {
+  foreignKey: 'RoomId',
+  onDelete: 'cascade',
+})
+
+Channel.hasMany(ChannelChatLog, {
+  foreignKey: 'RoomId',
+  onDelete: 'cascade',
+})
+Channel.hasMany(ChannelConcurrentUserLog, {
+  foreignKey: 'RoomId',
+  onDelete: 'cascade',
+})
 
 module.exports = db
