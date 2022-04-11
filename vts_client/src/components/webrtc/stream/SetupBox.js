@@ -53,6 +53,12 @@ const SetupBox = (props) => {
   const [thumbNail, setThumbNail] = useState(null)
   const [roomTitle, setRoomTitle] = useState('')
   const [roomHost, setRoomHost] = useState('')
+  const [roomCategory, setRoomCategory] = useState('')
+
+  const [roomStorePath, setRoomStorePath] = useState('')
+  const [roomStoreCategory, setRoomStoreCategory] = useState('')
+  const [roomStoreId, setRoomStoreId] = useState('')
+  const [roomProductId, setRoomProductId] = useState('')
 
   useEffect(() => {
     getPeerGeoLocation()
@@ -83,10 +89,16 @@ const SetupBox = (props) => {
     formData.append('title', roomTitle)
     formData.append('host', roomHost)
     formData.append('roomId', roomId)
+    formData.append('roomCategory', roomCategory)
+
+    formData.append('storePath', roomStorePath)
+    formData.append('storeCategory', roomStoreCategory)
+    formData.append('storeId', roomStoreId)
+    formData.append('productId', roomProductId)
 
     PostFetchQuotes({
       // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomCreate',
-      uri: 'http://localhost:4001/roomCreate',
+      uri: 'https://106.255.237.50:4000/roomCreate',
       body: formData,
       msg: 'Create Room',
     })
@@ -106,7 +118,8 @@ const SetupBox = (props) => {
       peer_hand: myHandStatus, // myHandStatus
       peer_rec: isRecScreenSream, // isRecScreenStream
     })
-    dispatch(roomAdd())
+
+    console.log('이건?')
     navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
       console.log('Access granted to audio/video')
       return dispatch(updateLocalMedia(stream))
@@ -149,6 +162,69 @@ const SetupBox = (props) => {
           />
         </label>
         <br />
+        <label>
+          Dummy Room category:{' '}
+          <input
+            type='text'
+            name='roomCategory'
+            value={roomCategory}
+            onChange={(e) => {
+              setRoomCategory(e.target.value)
+            }}
+          />
+        </label>
+        <br />
+        <br />
+
+        <label>
+          Dummy Store path:{' '}
+          <input
+            type='text'
+            name='storePath'
+            value={roomStorePath}
+            onChange={(e) => {
+              setRoomStorePath(e.target.value)
+            }}
+          />
+        </label>
+        <br />
+        <label>
+          Dummy Store category:{' '}
+          <input
+            type='text'
+            name='storeCategory'
+            value={roomStoreCategory}
+            onChange={(e) => {
+              setRoomStoreCategory(e.target.value)
+            }}
+          />
+        </label>
+        <br />
+        <label>
+          Dummy Store Id:{' '}
+          <input
+            type='number'
+            name='storeId'
+            value={roomStoreId}
+            onChange={(e) => {
+              setRoomStoreId(e.target.value)
+            }}
+          />
+        </label>
+        <br />
+        <label>
+          Dummy Store Product Id:{' '}
+          <input
+            type='number'
+            name='productId'
+            value={roomProductId}
+            onChange={(e) => {
+              setRoomProductId(e.target.value)
+            }}
+          />
+        </label>
+        <br />
+
         <input type='submit' value='setup done' />
       </form>
     </div>

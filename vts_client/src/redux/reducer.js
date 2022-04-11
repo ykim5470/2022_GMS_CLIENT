@@ -2,10 +2,10 @@ import { io } from 'socket.io-client'
 
 const signalingServerPort = 4001
 // const signalingServer = 'https://dbd6-211-171-1-210.ngrok.io'
-const signalingServer = 'http://localhost:4001'
+const signalingServer = 'https://106.255.237.50:4000'
 
 let signalingSocket = io(signalingServer, {
-  // withCredentials: true,
+  withCredentials: true,
   extraHeaders: {
     'my-custom-header': 'webrtcSocketFromClient',
   },

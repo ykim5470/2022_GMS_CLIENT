@@ -11,10 +11,8 @@ const Media = (props) => {
   const peerConnections = useRef({})
   const peerConnection = useRef({})
   const description = useRef({})
-  console.log(localMedia)
 
   const videoRef = useRef({})
-  console.log(videoRef)
 
   useEffect(() => {
     if (localMedia && !videoRef.current.srcObject)
@@ -111,42 +109,16 @@ const Media = (props) => {
       )
       console.log(config)
 
-      // if (peerConnections.current[peer_id].signalingState !== 'stable') return
-      // else {
       description.current = new RTCSessionDescription(session_description)
 
       peerConnections.current[peer_id]
         .setRemoteDescription(description.current)
         .then(() => {
           console.log('setRemoteDescription done!')
-          // if (session_description.type == 'offer') {
-          //   console.log('Creating answer')
-          //   peerConnections.current[peer_id]
-          //     .createAnswer()
-          //     .then((local_description) => {
-          //       console.log('Answer description is: ', local_description)
-          //       peerConnections.current[peer_id]
-          //         .setLocalDescription(local_description)
-          //         .then(() => {
-          //           signalingSocket.emit('relaySDP', {
-          //             peer_id: peer_id,
-          //             session_description: local_description,
-          //           })
-          //           console.log('Answer setLocalDescription done!')
-          //         })
-          //         .catch((err) => {
-          //           console.error('[Error] answer setLocalDescription', err)
-          //         })
-          //     })
-          //     .catch((err) => {
-          //       console.error('[Error] creating answer', err)
-          //     })
-          // }
         })
         .catch((err) => {
           console.error('[Error] setRemoteDescription', err)
         })
-      // }
     })
   }, [])
 

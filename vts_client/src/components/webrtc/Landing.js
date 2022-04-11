@@ -9,15 +9,13 @@ const Landing = () =>
     // let location = useLocation()
     // console.log(search)
 
-    const joinRoom = () => {
+    const createRoomNumber = () => {
       GetFetchQuotes({
-        // uri: 'https://dbd6-211-171-1-210.ngrok.io/joinRoom',
-        uri: 'http://localhost:4001/joinRoom',
-        msg: 'Get Randome room ID',
+        uri: 'https://106.255.237.50:4000/createRoomNumber',
+        msg: 'Get Random room ID',
       }).then((result) => {
         console.log(result)
-
-        return navigate(`/stream/${result.data}`, { replace: true })
+        return navigate(`/stream/${result.roomId}`, { replace: true })
       })
     }
 
@@ -25,10 +23,10 @@ const Landing = () =>
       <div className='landing'>
         <div>Landing component</div>
         {/* <div>{JSON.stringify(match, null, 2)}</div>
-      <div>{JSON.stringify(location, null, 2)}</div>
+      <div>{JSON.stringify(location, null, 2)}</div>~
       <div>{JSON.stringify(history, null, 2)}</div> */}
 
-        <button onClick={joinRoom}>Live Start</button>
+        <button onClick={createRoomNumber}>Live Start</button>
       </div>
     )
   }
