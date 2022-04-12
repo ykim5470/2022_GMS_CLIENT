@@ -3,8 +3,17 @@ import { Route } from 'react-router-dom'
  * WebRTC pages components
  * @interface Components
  */
-import Landing from './components/webrtc/Landing'
+
+/**
+ * GUIDE
+ */
+import Landing from './components/webrtc/guide/Landing'
+import GuideProfile from './components/webrtc/guide/GuideProfile'
+import GuideContents from './components/webrtc/guide/GuideContents'
 import Stream from './components/webrtc/stream/Stream'
+/**
+ * USER
+ */
 import User from './components/webrtc/user/User'
 import View from './components/webrtc/user/View'
 
@@ -14,11 +23,25 @@ const routes = [
    * @components
    */
   {
-    path: '/',
+    path: '/guide:id/landing',
     name: 'Landing',
     exact: true,
     component: Landing,
     route: Route,
+  },
+  {
+    path: '/guide:id/profile',
+    name: 'GuideProfile',
+    exact: true,
+    component:  GuideProfile,
+    route: Route,
+  },
+  {
+    path: '/guide:id/contents',
+    name: 'GuideContents',
+    exact: true,
+    component: GuideContents,
+    route: Route
   },
   {
     path: '/stream/:id',

@@ -11,12 +11,22 @@ const Media = (props) => {
   const peerConnections = useRef({})
   const peerConnection = useRef({})
   const description = useRef({})
+  const preload = useRef({})
 
   const videoRef = useRef({})
 
   useEffect(() => {
     if (localMedia && !videoRef.current.srcObject)
+  
+
       videoRef.current.srcObject = localMedia
+      var binaryData = []
+      binaryData.push(localMedia)
+      
+
+      preload.current = window.URL.createObjectURL(new Blob(binaryData, {type: 'video/webm'}))
+      console.log(preload)
+      console.log(preload.current)
 
     // handleAddPeer
     signalingSocket.on('addPeer', (config) => {
@@ -125,6 +135,7 @@ const Media = (props) => {
   return (
     <div className='media'>
       <video ref={videoRef} autoPlay playsInline muted />
+      <video preload='auto' autoPlay playsInline muted src={preload.current}/>
     </div>
   )
 }

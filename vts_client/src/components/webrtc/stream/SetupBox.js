@@ -50,7 +50,7 @@ const SetupBox = (props) => {
   const signalingSocket = props.socket
   const { id } = useParams()
   const roomId = id
-  const [thumbNail, setThumbNail] = useState(null)
+  const [thumbnail, setThumbnail] = useState(null)
   const [roomTitle, setRoomTitle] = useState('')
   const [roomHost, setRoomHost] = useState('')
   const [roomCategory, setRoomCategory] = useState('')
@@ -69,7 +69,7 @@ const SetupBox = (props) => {
   }, [])
 
   const onFileChange = (e) => {
-    setThumbNail(e.target.files[0])
+    setThumbnail(e.target.files[0])
   }
 
   // navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
@@ -85,7 +85,7 @@ const SetupBox = (props) => {
    */
   const roomCreate = (event) => {
     let formData = new FormData()
-    formData.append('thumbNail', thumbNail)
+    formData.append('thumbnail', thumbnail)
     formData.append('title', roomTitle)
     formData.append('host', roomHost)
     formData.append('roomId', roomId)
@@ -119,7 +119,6 @@ const SetupBox = (props) => {
       peer_rec: isRecScreenSream, // isRecScreenStream
     })
 
-    console.log('이건?')
     navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
       console.log('Access granted to audio/video')
       return dispatch(updateLocalMedia(stream))
