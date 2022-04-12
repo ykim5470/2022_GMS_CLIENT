@@ -4,58 +4,71 @@ const express = require('express')
 const { v4: uuidV4 } = require('uuid')
 const router = express.Router()
 
-const multerSet = require('../middle/multer')
+const liveThumbnailMulterSet = require('../middle/liveThumbnailMulter')
+// const recThumbnailMulterSet = require('../middle/recThumbnailMulter')
+// const recMediaMulterSet = require('../middle/recMediaMulter')
+const upload = require('../middle/recUploadMulter')
+
 const Models = require('../../../models')
 
-/**
- * @swagger
- *  /createRoomNumber:
- *    get:
- *      tags:
- *      - Create a unique random Room name
- *      description: 고유 방 이름 생성
- *      produces:
- *       - application/json
- *      parameters:
- *      - in: query
- *        name: roomId
- *        required: true
- *        description: random room id
- *      schema:
- *        type: UUID
- *        description: 방이름
- *      responses:
- *        200:
- *          description: 방 이름 조회 성공
- *          content:
- *            application/json:
- *              schema:
- *                $ref: '../../api/swagger/createRoomNumber.yaml#/components/schemas/createRoomNumber'
- */
+
 router.get('/createRoomNumber', (req, res) => {
   const randomRoomId = uuidV4()
   try {
-    return res.status(200).json({ roomId: randwomRoomId })
+    return res.status(200).json({ roomId: randomRoomId })
   } catch (err) {
     return res.status(404).json(err)
   }
 })
 
-router.get('/roomList', async (req, res) => {
-  const contents = await Models.Channel.findAll({
-    attributes: ['title', 'host', 'roomId', 'thumbnail'],
-  }).then((result) => {
-    return result
+
+router.get('/guideRoomList', async (req, res) => {
+
+   let roomList = await Models.Channel.findAll({
+   include: [
+     {
+       model: Models.ChannelSetConfig,
+       as: 'setConfig',
+       attributes: ['Title', 'Host', 'Thumbnail', 'RoomCategory', 'CreatedAt']
+     }
+   ],
+  //  where:{IsActivate: 1}, guide id will be received from reqest query 
+   attributes: ['RoomId']
   })
 
-  res.status(200).json(contents)
+  const roomListObject = JSON.parse(JSON.stringify(roomList, null, 2))
+
+
+  res.status(200).json(roomListObject)
+
+})
+
+router.get('/roomList', async (req, res) => {
+
+  let roomList = await Models.Channel.findAll({
+  include: [
+    {
+      model: Models.ChannelSetConfig,
+      as: 'setConfig',
+      attributes: ['Title', 'Host', 'Thumbnail', 'RoomCategory', 'CreatedAt']
+    }
+  ],
+  where:{IsActivate: 1},
+  attributes: ['RoomId']
+ })
+
+ const roomListObject = JSON.parse(JSON.stringify(roomList, null, 2))
+
+
+ res.status(200).json(roomListObject)
+
 })
 
 /**
  * @param {req.body} - title, host, roomId
  * @param {req.file} - thumbnail data
  */
-router.post('/roomCreate', multerSet.single('thumbNail'), async (req, res) => {
+router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (req, res) => {
   const {
     title,
     host,
@@ -69,6 +82,8 @@ router.post('/roomCreate', multerSet.single('thumbNail'), async (req, res) => {
   const { fieldname, originalname, destination, filename, path, size } =
     req.file
 
+  console.log(req.file)
+
   await Models.Channel.create({
     RoomId: roomId,
   })
@@ -77,9 +92,9 @@ router.post('/roomCreate', multerSet.single('thumbNail'), async (req, res) => {
     RoomId: roomId,
     Title: title,
     Host: host,
-    Thumbnail: path,
+    Thumbnail: filename,
     RoomCategory: roomCategory,
-  }).then((result) => {
+  }).then((result) => {    
     return result
   })
 
@@ -92,6 +107,13 @@ router.post('/roomCreate', multerSet.single('thumbNail'), async (req, res) => {
   })
 
   res.status(200)
+})
+
+
+router.post('/recordMediaUpload',upload, (req,res)=>{
+  console.log(req.body)
+  console.log(req.file)
+
 })
 
 module.exports = router

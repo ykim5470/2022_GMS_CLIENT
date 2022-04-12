@@ -26,6 +26,7 @@
     "socket.io": "^4.4.1",
     "swagger-jsdoc": "^6.2.0",
     "swagger-ui-express": "^4.3.0",
+    "util": "^0.12.4",
     "uuid": "^8.3.2",
     "yamljs": "^0.3.0"
   }

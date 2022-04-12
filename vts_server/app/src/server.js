@@ -16,7 +16,7 @@ const app = express()
 const Logger = require('./Logger')
 const log = new Logger('server')
 
-const port = process.env.PORT || 4001 // must be the same to client.js signalingServerPort
+const port = process.env.PORT || 4000 // must be the same to client.js signalingServerPort
 const isHttps = true
 
 let io, server, host
@@ -53,14 +53,10 @@ io = new Server({
   maxHttpBufferSize: 1e7,
   pingTimeout: 60000,
   cors: {
-<<<<<<< HEAD
-    origin: 'http://a6ae-211-171-1-210.ngrok.io',
-=======
-    origin: 'https://106.255.237.50:3000',
->>>>>>> d5d3b1ae4043c988b2b3d16e80e0d20798b4a619
+    origin: 'https://106.255.237.50:8080',
     methods: ['GET', 'POST'],
     allowedHeaders: ['my-custom-header'],
-    // credentials: true,
+    credentials: true,
   },
 }).listen(server)
 
@@ -74,7 +70,7 @@ sequelize
   })
 
 // Swagger config
-const { swaggerUi, specs } = require('../api/swagger')
+const { swaggerUi, swaggerJsDoc } = require('../api/swagger')
 
 // Api config
 const apiBasePath = '/api/v1' // api endpoint path
@@ -94,7 +90,8 @@ let peers = {} // collect peers info grp by channels
 app.use(cors()) // Enable All CORS Requests for all origins
 app.use(compression()) // Compress all HTTP responses using GZip
 app.use(express.json()) // Api parse body data as json
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs)) // Swagger API documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJsDoc)) // Swagger API documentation
+app.use('/uploads', express.static(path.join(__dirname + '/uploads/GUIDE/streaming/live/thumbnailSource/')))
 
 app.use('/', apiHandler)
 

@@ -54,6 +54,7 @@ ChannelConcurrentUserLog.init(sequelize)
 
 Channel.hasMany(ChannelSetConfig, {
   foreignKey: 'RoomId',
+  as: 'setConfig',
   onDelete: 'cascade',
 })
 
