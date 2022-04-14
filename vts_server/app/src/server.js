@@ -53,11 +53,12 @@ io = new Server({
   maxHttpBufferSize: 1e7,
   pingTimeout: 60000,
   cors: {
-    origin: 'https://106.255.237.50:8080',
+    origin: 'https://enjoystreet.kr',
     methods: ['GET', 'POST'],
     allowedHeaders: ['my-custom-header'],
     credentials: true,
   },
+  ws: true
 }).listen(server)
 
 sequelize
@@ -246,25 +247,6 @@ io.sockets.on('connect', (socket) => {
         iceServers: iceServers,
       })
     }
-
-    // for (let id in channels[channel]) {
-    //   // offer false
-    //   channels[channel][id].emit('addPeer', {
-    //     peer_id: socket.id,
-    //     peers: peers[channel],
-    //     should_create_offer: false,
-    //     iceServers: iceServers,
-    //   })
-
-    //   // offer true
-    //   socket.emit('addPeer', {
-    //     peer_id: id,
-    //     peers: peers[channel],
-    //     should_create_offer: true,
-    //     iceServers: iceServers,
-    //   })
-    //   log.debug('[' + socket.id + '] emit addPeer [' + id + ']')
-    // }
   }
 
   /**
