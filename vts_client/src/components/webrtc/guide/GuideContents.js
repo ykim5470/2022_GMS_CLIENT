@@ -17,7 +17,8 @@ const GuideContents = () =>
 
     useEffect(()=>{
       GetFetchQuotes({
-        uri: 'https://106.255.237.50:4000/guideRoomList',
+        // uri: 'https://106.255.237.50:4000/guideRoomList',
+        uri: 'https://enjoystreet.kr/guideRoomList',
         msg: 'GET current Room Contents information',
       }).then((result) => {
         setContents(result)
@@ -64,7 +65,9 @@ const GuideContents = () =>
 
       PostFetchQuotes({
         // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomCreate',
-        uri: 'https://106.255.237.50:4000/recordMediaUpload',
+        // uri: 'https://106.255.237.50:4000/recordMediaUpload',
+        uri: 'https://enjoystreet.kr/recordMediaUpload',
+
         body: formData,
         msg: 'record media upload',
       })
@@ -86,7 +89,10 @@ const GuideContents = () =>
         Live
         <br/>
         { contents.map((el,idx) => {
-          let thumnail = `https://106.255.237.50:4000/uploads/${el.setConfig[0].Thumbnail}`
+          // let thumnail = `https://106.255.237.50:4000/uploads/${el.setConfig[0].Thumbnail}`
+          let thumnail = `https://enjoystreet.kr/uploads/${el.setConfig[0].Thumbnail}`
+
+
           return (<>
           <img width={100} height={50}alt='thumbnail' src={thumnail} />
            <div >{el.setConfig[0].Title} </div>

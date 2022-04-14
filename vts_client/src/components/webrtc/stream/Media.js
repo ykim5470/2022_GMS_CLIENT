@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 /**
  *
@@ -14,6 +15,8 @@ const Media = (props) => {
   const preload = useRef({})
 
   const videoRef = useRef({})
+
+  const naviagte = useNavigate()
 
   useEffect(() => {
     if (localMedia && !videoRef.current.srcObject)
@@ -130,6 +133,35 @@ const Media = (props) => {
           console.error('[Error] setRemoteDescription', err)
         })
     })
+
+
+    signalingSocket.on('removePeer', (config) =>{
+      console.log('Signaling server said to remove peer:' , config)
+
+      const {peer_id} = config.peer_id
+      if(peer_id in peerConnections.current) peerConnections.current[peer_id].close()
+      
+      delete peerConnections.current[peer_id]
+    })
+
+
+    signalingSocket.on('handleDisconnect', (reason)=>{
+      console.log('Disconnected from signaling server', {reason: reason})
+      for(let peer_id in peerConnections.current){
+        peerConnections.current[peer_id].close()
+      }
+      peerConnections.current = {}
+
+      // emit to server update live room activate status 
+
+
+      // redirect to guide's landing page 
+      naviagte('/guide1/landing', {replace: true})
+
+    })
+
+
+    
   }, [])
 
   return (

@@ -8,7 +8,9 @@ const Landing = () =>
 
     const createRoomNumber = () => {
       GetFetchQuotes({
-        uri: 'https://106.255.237.50:4000/createRoomNumber',
+        // uri: 'https://106.255.237.50:4000/createRoomNumber',
+        uri: 'https://enjoystreet.kr/createRoomNumber',
+
         msg: 'Get Random room ID',
       }).then((result) => {
         console.log(result)

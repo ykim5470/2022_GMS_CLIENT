@@ -11,6 +11,8 @@ const User = () => {
   // console.log(id)
 
   const [myPeerId, setMyPeerId] = useState('')
+  const [socketId , setSocketId] = useState('')
+
 
   // state.signalingSocket.on('connect', setMyPeerId(state.signalingSocket.id))
 
@@ -27,14 +29,13 @@ const User = () => {
   //   // set peer id when client connects to the server
   //   setMyPeerId(state.signalingSocket.id)
   // })
-  // console.log(state.signalingSocket)
 
   // if (myPeerId === '') {
   //   return <div className='loading'>Loading</div> // Lazy load required
   // } else {
   //   return <div className='user'>{<Content />}</div>
   // }
-  return <div className='userList'>{<Content />}</div>
+  return <div className='userList'>{<Content socket={socketId}/>}</div>
 }
 
 export default User

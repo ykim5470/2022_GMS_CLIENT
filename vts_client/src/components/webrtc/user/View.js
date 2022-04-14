@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import DetectRTC from 'detectrtc'
 import { toHaveDescription } from '@testing-library/jest-dom/dist/matchers'
@@ -17,6 +17,7 @@ let isRecScreenSream = false
 // let remoteMediaStream
 
 const View = () => {
+  const navigate = useNavigate()
   const state = useSelector((state) => state)
   // const [myPeerId, setMyPeerId] = useState('')
   const myPeerId = useRef({})
@@ -30,6 +31,7 @@ const View = () => {
 
   const { id } = useParams()
   const roomId = id
+  console.log(roomId)
 
   useEffect(() => {
     getPeerGeoLocation()
@@ -155,21 +157,23 @@ const View = () => {
         })
     })
 
-    // setMyPeerId(state.signalingSocket.id)
-    // myPeerId.current = state.signalingSocket.id
-    // if (Object.keys(stateRemoteStream).length !== 0) {
-    //   console.log(stateRemoteStream)
-    //   videoRef.current.srcObject = stateRemoteStream
-    // }
+
+    // handleRemovePeer
+    state.signalingSocket.on('removePeer', (config) =>{
+      console.log('Signaling server said to remove peer:' , config)
+
+      const {peer_id} = config.peer_id
+      if(peer_id in peerConnections.current) peerConnections.current[peer_id].close()
+      
+      delete peerConnections.current[peer_id]
+
+      // alert and redirect handling required!      
+      navigate('/user', {replace: true}) 
+    })
+
   }, [])
 
-  /**
-   * handleConnect
-   * join to channel and send some peer info
-   */
-  // if (myPeerId.current !== '') {
 
-  // }
 
   return (
     <div className='user'>

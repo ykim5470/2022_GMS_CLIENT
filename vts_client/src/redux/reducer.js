@@ -2,7 +2,9 @@ import { io } from 'socket.io-client'
 
 const signalingServerPort = 4000
 // const signalingServer = 'https://dbd6-211-171-1-210.ngrok.io'
-const signalingServer = 'https://106.255.237.50:4000'
+// const signalingServer = 'https://106.255.237.50:4000'
+const signalingServer = 'https://enjoystreet.kr'
+
 
 let signalingSocket = io(signalingServer, {
   withCredentials: true,

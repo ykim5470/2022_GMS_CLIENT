@@ -52,9 +52,9 @@ const routes = [
   },
   { path: '/user', name: 'User', exact: true, component: User, route: Route },
   {
-    path: '/user/:id',
+    path: '/view/:id',
     name: 'View',
-    // exact: true,
+    exact: true,
     component: View,
     route: Route,
   },

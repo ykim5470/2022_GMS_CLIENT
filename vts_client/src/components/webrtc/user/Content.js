@@ -28,36 +28,49 @@ const Content = (props) => {
   const dispatch = useDispatch()
   const [contents, setContents] = useState([])
 
+
+
   const joinRoom = (e) => {
     const roomId = e.target.value
     // pass user peer config and emit join event in the child component
     // navigate(roomId, {state: roomId})
-    navigate(roomId)
 
-    e.preventDefault()
+
+    return navigate(`/view/${roomId}`, { replace: true })
+
+
+    // e.preventDefault()
   }
 
   useEffect(() => {
      GetFetchQuotes({
       // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomList',
-      uri: 'https://106.255.237.50:4000/roomList',
+      // uri: 'https://106.255.237.50:4000/roomList',
+      uri: 'https://enjoystreet.kr/roomList',
       msg: 'GET current Room Contents information',
     }).then((result) => {
-      console.log(result)
       setContents(result)
     })
   }, [state.roomContents])
 
+  
   if (contents.length !== 0) {
     return (
       <div className='content'>
-        {contents.map((el, idx) => {
+        {contents.map((el, idx) => 
+        {
+          let thumnail = `https://enjoystreet.kr/uploads/${el.setConfig[0].Thumbnail}`
+
+          // let thumnail = `https://106.255.237.50:4000/uploads/${el.setConfig[0].Thumbnail}`
           return (
             <form key={idx}>
+          <img width={100} height={50}alt='thumbnail' src={thumnail} />
               <div>
-                {el.title}
+                {el.setConfig[0].Title}
                 <br />
-                <button type='button' onClick={joinRoom} value={el.roomId}>
+                <div >{el.setConfig[0].Host} </div>
+           <div>{el.setConfig[0].RoomCategory}</div>
+                <button type='button' onClick={joinRoom} value={el.RoomId}>
                   join
                 </button>
               </div>
