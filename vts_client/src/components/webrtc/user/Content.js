@@ -46,7 +46,7 @@ const Content = (props) => {
      GetFetchQuotes({
       // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomList',
       // uri: 'https://106.255.237.50:4000/roomList',
-      uri: 'https://enjoystreet.kr/roomList',
+      uri: process.env.REACT_APP_LOCAL_IP + '/roomList',
       msg: 'GET current Room Contents information',
     }).then((result) => {
       setContents(result)
@@ -59,7 +59,7 @@ const Content = (props) => {
       <div className='content'>
         {contents.map((el, idx) => 
         {
-          let thumnail = `https://enjoystreet.kr/uploads/${el.setConfig[0].Thumbnail}`
+          let thumnail = `${process.env.REACT_APP_LOCAL_IP}/uploads/${el.setConfig[0].Thumbnail}`
 
           // let thumnail = `https://106.255.237.50:4000/uploads/${el.setConfig[0].Thumbnail}`
           return (

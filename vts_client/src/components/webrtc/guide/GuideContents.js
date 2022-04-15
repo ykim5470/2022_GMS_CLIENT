@@ -1,4 +1,4 @@
-import React, {useEffect,useState} from 'react'
+import React, {useEffect,useState,useRef} from 'react'
 import { GetFetchQuotes } from '../../../api/fetch'
 import { useNavigate } from 'react-router-dom'
 import { PostFetchQuotes } from '../../../api/fetch'
@@ -9,8 +9,9 @@ const GuideContents = () =>
   {
   const [contents, setContents] = useState([])
   const [roomId, setRoomId] = useState('')
-  const [thumbnail, setThumbnail] = useState(null)
-  const [media, setMedia] = useState(null)
+  // const [thumbnail, setThumbnail] = useState(null)
+  // const [media, setMedia] = useState(null)
+  const resources = useRef({})
   const [roomTitle, setRoomTitle] = useState('')
   const [roomHost, setRoomHost] = useState('')
   const [roomCategory, setRoomCategory] = useState('')
@@ -18,7 +19,7 @@ const GuideContents = () =>
     useEffect(()=>{
       GetFetchQuotes({
         // uri: 'https://106.255.237.50:4000/guideRoomList',
-        uri: 'https://enjoystreet.kr/guideRoomList',
+        uri: `${process.env.REACT_APP_LOCAL_IP}/guideRoomList`,
         msg: 'GET current Room Contents information',
       }).then((result) => {
         setContents(result)
@@ -42,31 +43,51 @@ const GuideContents = () =>
     }
 
 
-    const onThumbnailFileChange = (e) => {
-      setThumbnail(e.target.files[0])
-    }
+    // const onThumbnailFileChange = (e) => {
+    //   setThumbnail(e.target.files[0])
+    // }
 
 
 
-    const onMediaFileChange = (e) => {
-      setMedia(e.target.files[0])
+    // const onMediaFileChange = (e) => {
+    //   setMedia(e.target.files[0])
 
+    // }
+
+
+    const onUploadChange = (e) =>{
+      // console.log(e.target.files)
+      let fileLists = e.target.files
+      resources.current = fileLists
+      // console.log(resources.current)
+      console.log(resources)
+      console.log(resources.current[0])
+      console.log(resources.current[1])
+      
+      e.preventDefault()
+      
+      // setResources(e.target.files[0])
     }
 
     // 
     const uploadRecordMedia = (event) =>{
       let formData = new FormData()
       formData.append('roomId', roomId)
-      formData.append('thumbnail', thumbnail)
-      formData.append('media', media)
+      console.log(formData)
+      console.log(resources.current)
+      for(let i=0; i< resources.current.length; i++){
+        formData.append('resources',resources.current[i])
+      }
       formData.append('title', roomTitle)
       formData.append('host', roomHost)
       formData.append('roomCategory', roomCategory)
 
+      console.log(formData)
+
       PostFetchQuotes({
         // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomCreate',
         // uri: 'https://106.255.237.50:4000/recordMediaUpload',
-        uri: 'https://enjoystreet.kr/recordMediaUpload',
+        uri: `${process.env.REACT_APP_LOCAL_IP}/recordMediaUpload`,
 
         body: formData,
         msg: 'record media upload',
@@ -90,7 +111,7 @@ const GuideContents = () =>
         <br/>
         { contents.map((el,idx) => {
           // let thumnail = `https://106.255.237.50:4000/uploads/${el.setConfig[0].Thumbnail}`
-          let thumnail = `https://enjoystreet.kr/uploads/${el.setConfig[0].Thumbnail}`
+          let thumnail = `${process.env.REACT_APP_LOCAL_IP}/uploads/${el.setConfig[0].Thumbnail}`
 
 
           return (<>
@@ -121,15 +142,15 @@ const GuideContents = () =>
           </label>
           <br />
           <label>
-            Dummy rec thumbnail:{' '}
-            <input type='file' name='thumbnail' onChange={onThumbnailFileChange} />
+            Dummy rec thumbnail & rec media :{' '}
+            <input type='file' name='resources' required multiple onChange={onUploadChange} />
           </label>
           <br />
-          <label>
+          {/* <label>
             Dummy rec file:{' '}
-            <input type='file' name='media' onChange={onMediaFileChange} />
+            <input type='file' name='media' required multiple onChange={onMediaFileChange} />
           </label>
-          <br />
+          <br /> */}
           <label>
             Dummy rec title:{' '}
             <input
