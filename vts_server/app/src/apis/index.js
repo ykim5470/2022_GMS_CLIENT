@@ -5,9 +5,8 @@ const { v4: uuidV4 } = require('uuid')
 const router = express.Router()
 
 const liveThumbnailMulterSet = require('../middle/liveThumbnailMulter')
-// const recThumbnailMulterSet = require('../middle/recThumbnailMulter')
-// const recMediaMulterSet = require('../middle/recMediaMulter')
-const upload = require('../middle/recUploadMulter')
+const recResourceUpload = require('../middle/recUploadMulter')
+const fileSizeFormatter = require('../helpers/fileUploaderController')
 
 const Models = require('../../../models')
 
@@ -69,6 +68,7 @@ router.get('/roomList', async (req, res) => {
  * @param {req.file} - thumbnail data
  */
 router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (req, res) => {
+  try{
   const {
     title,
     host,
@@ -83,6 +83,7 @@ router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (re
     req.file
 
   console.log(req.file)
+
 
   await Models.Channel.create({
     RoomId: roomId,
@@ -106,14 +107,56 @@ router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (re
     ProductId: productId,
   })
 
-  res.status(200)
+  res.status(200).json('roomCreate sucess')
+}catch(err){
+  res.status(400).json(err)
+}
 })
 
 
-router.post('/recordMediaUpload',upload, (req,res)=>{
-  console.log(req.body)
-  console.log(req.file)
+router.post('/recordMediaUpload',recResourceUpload.array('resources',  2), async(req,res)=>{
+  try{
+    const {roomId, title, host, roomCategory} = req.body
+    
+    console.log(req.body)
+    let filesArray = []
+    req.files.forEach(el => {
+      const file = {
+        fileName: el.originalname,
+        filePath: el.path,
+        fileType: el.mimetype, 
+        fileSize: fileSizeFormatter(el.size,2)
+      }
+      filesArray.push(file)
+    })
+    
+    let thumbnail = {}
+    let media = {}
+    if(filesArray.length !== 2){
+      throw Error('Invalid upload count')
+    }else{
+      filesArray.map((el,idx) => {
+        if(el.fileType.split('/')[0] === 'image') {return thumbnail = {...filesArray[idx]}}
+        if(el.fileType.split('/')[0] === 'video')  {return media = {...filesArray[idx]}}
+      })
+    }
+    
+    await Models.ChannelRecordManagementConfig.create({
+      RoomId: roomId,
+      Media: media.fileName,
+      FileSize: media.fileSize,
+      Thumbnail: thumbnail.fileName,
+      Title: title, 
+      Host: host,
+      RoomCategory:roomCategory,
+    })
 
+    
+  res.status(200).json('recordMediaUpload success')
+  }catch(err){
+    console.log(err)
+    res.status(400).json(err)
+  }
 })
 
 module.exports = router

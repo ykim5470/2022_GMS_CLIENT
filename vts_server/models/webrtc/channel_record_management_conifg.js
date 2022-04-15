@@ -12,12 +12,12 @@ module.exports = class ChannelRecordManagementConfig extends Sequelize.Model {
           type: Sequelize.STRING,
           allowNull: false,
         },
-        FilePath: {
+        Media: {
           type: Sequelize.STRING,
           allowNull: false,
         },
         FileSize: {
-          type: Sequelize.INTEGER,
+          type: Sequelize.STRING,
           allowNull: false,
         },
         Thumbnail: {
