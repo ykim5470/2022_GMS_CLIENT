@@ -159,4 +159,42 @@ router.post('/recordMediaUpload',recResourceUpload.array('resources',  2), async
   }
 })
 
+
+/**
+ * 인터뷰 과제 
+ */
+router.get('userInfo', async(req,res)=>{
+  let userList = await Models.User.findAll({
+    attributes: ['User', 'Role', 'Msg', 'Id']
+  })
+  return res.status(200).json(userList)
+})
+
+router.post('registerUserInfo', async(req,res)=>{
+  const [name, role, message] = req.body
+  await Models.User.create({
+    User: name,
+    Role: role, 
+    Msg: message
+  })
+  return res.status(200).json('User Information Registered Successfully!')
+})
+
+router.put('updateUserInfo', async(req,res) =>{
+  const [id, name, role, message] = req.body
+  await Models.User.update(
+   {User: name, Role: role, Msg: message},
+   {where: {Id: id}}
+  )
+  return res.status(200).json('User Information Updated Successfully!')
+})
+
+router.delete('deleteUserInfo', async(req,res)=>{
+  const [id] = req.body
+    await Models.User.destroy({
+    where: {Id: id}
+  })
+  return res.status(200).json('User Information Deleted Successfully!')
+})
+
 module.exports = router
