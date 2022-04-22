@@ -4,14 +4,14 @@ const signalingServerPort = 4000
 // const signalingServer = 'https://dbd6-211-171-1-210.ngrok.io'
 // const signalingServer = 'https://106.255.237.50:4000'
 // const signalingServer = 'https://enjoystreet.kr'
-const signalingServer = process.env.REACT_APP_LOCAL_IP
+const signalingServer = process.env.REACT_APP_PUBLIC_IP
 
 
 let signalingSocket = io(signalingServer, {
-  withCredentials: true,
-  extraHeaders: {
-    'my-custom-header': 'webrtcSocketFromClient',
-  },
+  // withCredentials: true,
+  // extraHeaders: {
+  //   'my-custom-header': 'webrtcSocketFromClient',
+  // },
 })
 
 // init state

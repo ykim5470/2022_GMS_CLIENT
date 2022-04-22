@@ -31,7 +31,8 @@ const View = () => {
   const videoRef = useRef({})
   const nickName = useRef('')
   const msgerInput = useRef('')
-  const [chatMessage,setChatMessage] = useState([])
+  const [chatMessages,setChatMessages] = useState([])
+
 
   const { id } = useParams()
   const roomId = id
@@ -110,6 +111,7 @@ const View = () => {
             case 'chatChannel':
               try{
                 let dataMessage = JSON.parse(msg.data)
+                console.log(dataMessage)
                 switch(dataMessage.type){
                   case 'chat':
                     handleDataChannelChat(dataMessage)
@@ -120,6 +122,8 @@ const View = () => {
                   case 'micVolume':
                     console.log('mic volume')
                     break
+                  default:
+                    return
                 }
               }catch(err){
                 console.error('chat channel error', err)
@@ -132,6 +136,8 @@ const View = () => {
                 }catch(err){
                   console.error('file sharing channel error', err)
                 }
+              default:
+                  return
           }
         }
       }
@@ -218,9 +224,6 @@ const View = () => {
       // alert and redirect handling required!      
       navigate('/user', {replace: true}) 
     })
-
-
-
   }, [])
 
   
@@ -243,6 +246,10 @@ function emitMsg(from, to, msg, privateMsg){
     privateMsg: privateMsg
   }
   console.log('Send msg', chatMessage)
+  setChatMessages(prevState => [
+    ...prevState, chatMessage
+  ]
+  )
   sendToDataChannel(chatMessage)
 }
 
@@ -268,6 +275,7 @@ function sendChatMessage(){
   const msg = msgerInput
 
   emitMsg('user1', 'toAll', msg.current, false)
+
   // appendMessage('user1', 'avatar', 'right', msg, false)
   msg.current = ''
 }
@@ -279,6 +287,7 @@ function sendChatMessage(){
  function handleDataChannelChat(dataMessage){
   if(!dataMessage)return 
 
+  console.log('이건 스트리머 쪽에서 채팅을 쳤을 때 불린다.')
   let msgFrom = dataMessage.from
   let msgTo = dataMessage.to
   let msg = dataMessage.msg
@@ -286,9 +295,12 @@ function sendChatMessage(){
 
   console.log('handleDataChannelChat', dataMessage)
 
-  console.log(chatDataChannels.current)
-  setChatMessage(...chatDataChannels.current)
-  // append message
+  setChatMessages(prevState => [
+    ...prevState, dataMessage
+  ]
+  )
+
+
 }
 
 
@@ -303,9 +315,8 @@ function sendChatMessage(){
       <div className='wrapper'>
         <div className='display-container'>
           <ul className='chatting-list'>
-            <li>
-              {chatMessage.map(msgObj => {return <div>msgObj.msg</div>})}
-            </li>
+  
+              {chatMessages.map((msgObj,idx) => {return <li key={idx}><span>{msgObj.from}: </span>{msgObj.msg}</li>})}
           </ul>
         </div>
         <div className='user-container'>

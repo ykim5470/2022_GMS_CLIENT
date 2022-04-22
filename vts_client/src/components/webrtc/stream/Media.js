@@ -16,7 +16,7 @@ const Media = (props) => {
   const preload = useRef({})
   const nickName = useRef('')
   const msgerInput = useRef('')
-  const [chatMessage,setChatMessage] = useState([])
+  // const [chatMessage,setChatMessage] = useState([])
 
 
 
@@ -119,7 +119,7 @@ const Media = (props) => {
                 let dataMessage = JSON.parse(msg.data)
                 switch(dataMessage.type){
                   case 'chat':
-                    //handleDataChannelChat(dataMessage)
+                    handleDataChannelChat(dataMessage)
                     break
                   case 'speech':
                     break
@@ -224,7 +224,6 @@ function emitMsg(from, to, msg, privateMsg){
     msg: msg,
     privateMsg: privateMsg
   }
-  console.log('Send msg', chatMessage)
   sendToDataChannel(chatMessage)
 }
 
@@ -233,8 +232,8 @@ function emitMsg(from, to, msg, privateMsg){
  * @param {*} config object data
  */
 async function sendToDataChannel(config){
-  console.log('여기오나')
   console.log(chatDataChannels.current)
+  
   for(let peer_id in chatDataChannels.current){
     if(chatDataChannels.current[peer_id].readyState ==='open'){
       await chatDataChannels.current[peer_id].send(JSON.stringify(config))
@@ -266,8 +265,8 @@ function sendChatMessage(){
 
   console.log('handleDataChannelChat', dataMessage)
 
-  console.log(chatDataChannels.current)
-  setChatMessage(...chatDataChannels.current)
+  // console.log(chatDataChannels.current)
+  // setChatMessage(chatDataChannels.current)
   // append message
 }
 
@@ -283,7 +282,7 @@ function sendChatMessage(){
         <div className='display-container'>
           <ul className='chatting-list'>
           <li>
-              {chatMessage.map(msgObj => {return <div>msgObj.msg</div>})}
+              {/* {chatMessage.map(msgObj => {return <div>msgObj.msg</div>})} */}
             </li>
           </ul>
         </div>
