@@ -15,7 +15,7 @@ const ChannelConcurrentUserLog = require('./webrtc/channel_ccu_log')
 
 const StoreBrand = require('./commerce/store_brand')
 const StoreProductDetail = require('./commerce/store_product_detail')
-const StoreProductCategory = require('./commerce/sotre_product_category')
+const StoreProductCategory = require('./commerce/store_product_category')
 
 
 
