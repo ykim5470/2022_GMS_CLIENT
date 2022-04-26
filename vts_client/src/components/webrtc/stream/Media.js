@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import {PostFetchQuotes} from '../../../api/fetch'
 
 /**
  *
@@ -7,16 +8,20 @@ import { useNavigate } from 'react-router-dom'
  * @returns Media component
  */
 const Media = (props) => {
+
   const signalingSocket = props.socket
   const localMedia = props.localMedia
   const peerConnections = useRef({})
   const peerConnection = useRef({})
-  const chatDataChannels = useRef({})
   const description = useRef({})
   const preload = useRef({})
   const nickName = useRef('')
   const msgerInput = useRef('')
-  // const [chatMessage,setChatMessage] = useState([])
+  const cameraMode = useRef('user')
+  const { id } = useParams()
+  const roomId = id
+  const [chatMessage,setChatMessage] = useState([])
+  
 
 
 
@@ -109,48 +114,18 @@ const Media = (props) => {
         }
       }
 
-      // Secure RTC Data Channel 
-      peerConnections.current[peer_id].ondatachannel =(event) =>{
-        console.log('handleRTCDataChannels' + peer_id , event)
-        event.channel.onmessage = (msg) =>{
-          switch(event.channel.label){
-            case 'chatChannel':
-              try{
-                let dataMessage = JSON.parse(msg.data)
-                switch(dataMessage.type){
-                  case 'chat':
-                    handleDataChannelChat(dataMessage)
-                    break
-                  case 'speech':
-                    break
-                  case 'micVolume':
-                    break
-                }
-              }catch(err){
-                console.error('chat channel error' , err)
-              }
-              break
-            case 'fileSharing':
-              try{
-                let dataFile = msg.data
-                //handleDataChannelFileSharing(dataFile)
-              }catch(err){
-                console.error('file sharing channel error',err)
-              }
-          }
-
-            
-        }
-      }
-      // createChatDataChannel(peer_id)
-      chatDataChannels.current[peer_id] = peerConnections.current[peer_id].createDataChannel(
-        'chatChannel'
-      )
-      chatDataChannels.current[peer_id].onopen = (event) =>{
-        console.log('chatDataChannels created', event)
-      }
-      // createFileSharingDataChannel(peer_id)
     })
+
+
+    signalingSocket.on('receiveChat', (data) =>{
+      const {from, msg} = data 
+      console.log('This message is from :' + from)
+      console.log('The message is :'+msg)
+      setChatMessage(
+        chatMessage => [...chatMessage, msg]
+      )
+    })
+
 
     signalingSocket.on('iceCandidate', (config) => {
       const { peer_id, ice_candidate } = config
@@ -208,82 +183,75 @@ const Media = (props) => {
     })
   }, [])
 
-       /**
- * Send message over Secure dataChannels
- * @param {*} from
- * @param {*} to
- * @param {*} msg
- * @param {*} privateMsg ture/false
- */
-function emitMsg(from, to, msg, privateMsg){
-  if(!msg)return 
-  let chatMessage = {
-    type: 'chat',
-    from: from, 
-    to: to, 
-    msg: msg,
-    privateMsg: privateMsg
-  }
-  sendToDataChannel(chatMessage)
-}
 
-/**
- * Send async data through RTC Data Channels 
- * @param {*} config object data
- */
-async function sendToDataChannel(config){
-  console.log(chatDataChannels.current)
-  
-  for(let peer_id in chatDataChannels.current){
-    if(chatDataChannels.current[peer_id].readyState ==='open'){
-      await chatDataChannels.current[peer_id].send(JSON.stringify(config))
-    }
-  }
-}
+
 
 /**
  * Send Chat messages to peers in the room
  */
-function sendChatMessage(){
+async function sendChatMessage(){
   const msg = msgerInput
 
-  emitMsg('guide1', 'toAll', msg.current, false)
-  msg.current = ''
+  await PostFetchQuotes({
+    uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
+    body: {
+      RoomId: roomId, 
+      User: signalingSocket.id, 
+      Text: msgerInput.current
+    },
+    msg: 'Create Chat Data Log'
+  })
+
+  signalingSocket.emit('chatting', (
+    {
+      channel: roomId,
+      peer_id: signalingSocket.id, 
+      msg: msgerInput.current}
+  ))
+
+  console.log(chatMessage)
+
+
+  setChatMessage(
+    chatMessage => [...chatMessage, msg.current]
+  )
 }
 
-/**
- * handle Incoming Data Channel Chat Messages 
- * @param {*} dataMessage
- */
- function handleDataChannelChat(dataMessage){
-  if(!dataMessage)return 
 
-  let msgFrom = dataMessage.from
-  let msgTo = dataMessage.to
-  let msg = dataMessage.msg
-  let msgPrivate = dataMessage.privateMsg
-
-  console.log('handleDataChannelChat', dataMessage)
-
-  // console.log(chatDataChannels.current)
-  // setChatMessage(chatDataChannels.current)
-  // append message
+// 카메라 전환
+const swapCamera = () =>{
+  
 }
+
+
+// /**
+//  * Check if can swap or not the cam, if yes show the button else hide it  
+// * */
+// function setSwapCameraBtn(){
+//   navigator.mediaDevices.enumerateDevices().then(devices => {
+//     const videoInput = devices.filter(device => device.kind ==='videoinput')
+//     if(videoInput.length > 1 && isMobileDevice){
+//       setSwapCameraBtn.addEventListener('click', e =>{
+//         swapCamera()
+//       })
+//     }else{
+//       setSwapCameraBtn.style.display = 'none'
+//     }
+//   })
+// } 
 
 
 
   return (
     <div className='media'>
-            {/* Video */}
+      {/* Video */}
       <video ref={videoRef} autoPlay playsInline muted />
 
-            {/* Chatting */}
-            <div className='wrapper'>
+      {/* Chatting */}
+      <div className='wrapper'>
         <div className='display-container'>
           <ul className='chatting-list'>
-          <li>
-              {/* {chatMessage.map(msgObj => {return <div>msgObj.msg</div>})} */}
-            </li>
+              {chatMessage.map((msgObj,idx) => {return <li key={idx}>{msgObj}</li>})}
           </ul>
         </div>
         <div className='user-container'>
@@ -295,6 +263,13 @@ function sendChatMessage(){
             <input type='text' className='chatting-input' ref={msgerInput} onChange={(e)=>{msgerInput.current = e.target.value}}/>
             <button className='send-button' onClick={sendChatMessage}>전송</button>
           </span>
+      </div>
+      {/* MediaControl */}
+      <div className='mediaController'> 
+        <button className='swapCameraBtn' ref={cameraMode} onClick={swapCamera}>
+          카메라 전환
+        </button>
+        
       </div>
     </div>
   )

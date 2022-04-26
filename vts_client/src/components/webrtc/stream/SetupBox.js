@@ -1,43 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { roomAdd, updateLocalMedia } from '../../../redux/thunk'
+import { audioUpdate, videoUpdate, createLocalMedia } from '../../../redux/thunk'
 
 import { PostFetchQuotes } from '../../../api/fetch'
 import DetectRTC from 'detectrtc'
 
+import { ToggleButtonGroup, ToggleButton } from '@mui/material'
+
+
 const peerLoockupUrl = 'https://extreme-ip-lookup.com/json/?key=demo2'
+let peerGeo = getPeerGeoLocation()
 
-const peerInfo = getPeerInfo()
-let peerGeo
-let myVideoStatus = true
-let myAudioStatus = true
-let myHandStatus = false
-let isRecScreenSream = false
-let videoMaxFrameRate = 30
-
-const videoConstraints = getVideoConstraints('default')
-const constraints = {
-  audio: {
-    echoCancellation: true,
-    noiseSuppression: true,
-    sampleRate: 44100,
-  },
-  video: videoConstraints,
-}
-
-/**
- *
- * @returns video constraints
- */
-function getVideoConstraints(videoQuality) {
-  let frameRate = { max: videoMaxFrameRate }
-  switch (videoQuality) {
-    case 'default':
-      return { frameRate: frameRate }
-  }
-}
 
 /**
  *
@@ -45,38 +20,61 @@ function getVideoConstraints(videoQuality) {
  * @returns SetupBox component
  */
 const SetupBox = (props) => {
-  const state = useSelector((state) => state)
+  const state = useSelector(state => state)
   const dispatch = useDispatch()
-  const signalingSocket = props.socket
+  const mediaConstraintsState = state.mediaConstraints
+
   const { id } = useParams()
   const roomId = id
-  const [thumbnail, setThumbnail] = useState(null)
-  const [roomTitle, setRoomTitle] = useState('')
-  const [roomHost, setRoomHost] = useState('')
-  const [roomCategory, setRoomCategory] = useState('')
 
-  const [roomStorePath, setRoomStorePath] = useState('')
-  const [roomStoreCategory, setRoomStoreCategory] = useState('')
-  const [roomStoreId, setRoomStoreId] = useState('')
-  const [roomProductId, setRoomProductId] = useState('')
+  const useVideo = useRef(true)
+  const useAudio = useRef(true)
 
-  useEffect(() => {
-    getPeerGeoLocation()
-    // navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-    //   console.log('Access granted to audio/video')
-    //   return dispatch(updateLocalMedia(stream))
-    // })
-  }, [])
-
-  const onFileChange = (e) => {
-    setThumbnail(e.target.files[0])
+  const audioController = () =>{
+    useAudio.current = !mediaConstraintsState.useAudio
+    const currentAudioOption = useAudio.current
+    dispatch(audioUpdate(currentAudioOption))
   }
 
-  // navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-  //   console.log('Access granted to audio/video')
-  //   return dispatch(updateLocalMedia(stream))
-  // })
-  // return setLocalMediaStream(stream)
+  const videoController =()=>{
+    useVideo.current = !mediaConstraintsState.useVideo
+    const currentVideoOption = useVideo.current
+    dispatch(videoUpdate(currentVideoOption))
+  }
+
+  const thumbnail = useRef(null)
+  const roomTitle = useRef('')
+  const roomHost = useRef('')
+  const roomCategory= useRef('')
+
+  const roomStorePath = useRef('')
+  const roomStoreCategory = useRef('')
+  const roomStoreId = useRef('')
+  const roomProductId = useRef('')
+
+  const peerInfo = getPeerInfo()
+
+
+  const isWebRTCSupported = DetectRTC.isWebRTCSupported
+  const myBrowserName = DetectRTC.browser.name
+
+  const videoConstraints = myBrowserName ==='Firefox' ? getVideoConstraints('useVideo', mediaConstraintsState.videoMaxFrameRate, mediaConstraintsState.useVideo) : getVideoConstraints('default', mediaConstraintsState.videoMaxFrameRate, mediaConstraintsState.useVideo)
+
+
+  const constraints = {
+    audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate: 44100,
+      },
+      video: videoConstraints,
+     }
+
+
+  const onFileChange = (e) => {
+    thumbnail.current = e.target.files[0]
+  }
+
 
   /**
    * Audio & Meida setup done correctly
@@ -85,16 +83,16 @@ const SetupBox = (props) => {
    */
   const roomCreate = (event) => {
     let formData = new FormData()
-    formData.append('thumbnail', thumbnail)
-    formData.append('title', roomTitle)
-    formData.append('host', roomHost)
+    formData.append('thumbnail', thumbnail.current)
+    formData.append('title', roomTitle.current)
+    formData.append('host', roomHost.current)
     formData.append('roomId', roomId)
-    formData.append('roomCategory', roomCategory)
+    formData.append('roomCategory', roomCategory.current)
 
-    formData.append('storePath', roomStorePath)
-    formData.append('storeCategory', roomStoreCategory)
-    formData.append('storeId', roomStoreId)
-    formData.append('productId', roomProductId)
+    formData.append('storePath', roomStorePath.current)
+    formData.append('storeCategory', roomStoreCategory.currnet)
+    formData.append('storeId', roomStoreId.currnet)
+    formData.append('productId', roomProductId.current)
 
     PostFetchQuotes({
       // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomCreate',
@@ -107,24 +105,24 @@ const SetupBox = (props) => {
     console.log('room create done')
     console.log('emit join to channel event to server')
 
-    console.log(peerGeo)
-
-    signalingSocket.emit('join', {
+    state.signalingSocket.emit('join', {
       channel: roomId,
       peer_info: peerInfo, // peerInfo
       peer_role: 'host', // host or user
       peer_geo: peerGeo, // peerGeo
-      peer_name: roomHost, // myPeerName
-      peer_video: myVideoStatus, // myVidoeStatus
-      peer_audio: myAudioStatus, // myAudioStatus
-      peer_hand: myHandStatus, // myHandStatus
-      peer_rec: isRecScreenSream, // isRecScreenStream
-    })
+      peer_video: mediaConstraintsState.myVideoStatus, // myVidoeStatus
+      peer_audio: mediaConstraintsState.myAudioStatus, // myAudioStatus
+      peer_hand: mediaConstraintsState.myHandStatus, // myHandStatus
+      peer_rec: mediaConstraintsState.isRecScreenSream, // isRecScreenStream
 
-    navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-      console.log('Access granted to audio/video')
-      return dispatch(updateLocalMedia(stream))
-    })
+  })
+
+  navigator.mediaDevices.getUserMedia(constraints).then(stream =>{
+    console.log('Access granted to audio/video')
+    return dispatch(createLocalMedia(stream))
+})
+
+
 
     event.preventDefault()
   }
@@ -144,9 +142,9 @@ const SetupBox = (props) => {
           <input
             type='text'
             name='title'
-            value={roomTitle}
+            ref={roomTitle}
             onChange={(e) => {
-              setRoomTitle(e.target.value)
+              roomTitle.current = (e.target.value)
             }}
           />
         </label>
@@ -156,9 +154,9 @@ const SetupBox = (props) => {
           <input
             type='text'
             name='host'
-            value={roomHost}
+            ref = {roomHost}
             onChange={(e) => {
-              setRoomHost(e.target.value)
+              roomHost.current =(e.target.value)
             }}
           />
         </label>
@@ -168,9 +166,9 @@ const SetupBox = (props) => {
           <input
             type='text'
             name='roomCategory'
-            value={roomCategory}
+            ref={roomCategory}
             onChange={(e) => {
-              setRoomCategory(e.target.value)
+              roomCategory.current = (e.target.value)
             }}
           />
         </label>
@@ -182,9 +180,9 @@ const SetupBox = (props) => {
           <input
             type='text'
             name='storePath'
-            value={roomStorePath}
+            ref={roomStorePath}
             onChange={(e) => {
-              setRoomStorePath(e.target.value)
+              roomStorePath.current = (e.target.value)
             }}
           />
         </label>
@@ -194,9 +192,9 @@ const SetupBox = (props) => {
           <input
             type='text'
             name='storeCategory'
-            value={roomStoreCategory}
+            ref={roomStoreCategory}
             onChange={(e) => {
-              setRoomStoreCategory(e.target.value)
+              roomStoreCategory.current = (e.target.value)
             }}
           />
         </label>
@@ -206,9 +204,9 @@ const SetupBox = (props) => {
           <input
             type='number'
             name='storeId'
-            value={roomStoreId}
+            ref={roomStoreId}
             onChange={(e) => {
-              setRoomStoreId(e.target.value)
+              roomStoreId.current = (e.target.value)
             }}
           />
         </label>
@@ -218,9 +216,9 @@ const SetupBox = (props) => {
           <input
             type='number'
             name='productId'
-            value={roomProductId}
+            ref={roomProductId}
             onChange={(e) => {
-              setRoomProductId(e.target.value)
+              roomProductId.current = (e.target.value)
             }}
           />
         </label>
@@ -228,33 +226,58 @@ const SetupBox = (props) => {
 
         <input type='submit' value='setup done' />
       </form>
+      <ToggleButtonGroup value={useVideo.current} onClick={videoController} aria-label='video toggle'>
+          {useVideo.current ?           
+          (<ToggleButton value={false} aria-label='video off'>
+            video off 
+          </ToggleButton>)
+           :       
+            (<ToggleButton value={true} aria-label='video on'>
+            video on 
+          </ToggleButton>)}
+        </ToggleButtonGroup>
+
+        <ToggleButtonGroup value={useAudio.current} onClick={audioController} aria-label='video toggle'>
+          {useAudio.current ?           
+          (<ToggleButton  aria-label='audio off'>
+            audio off 
+          </ToggleButton>)
+          : 
+         (<ToggleButton  aria-label='audio on'>
+          audio on 
+        </ToggleButton>)
+         }
+        </ToggleButtonGroup>
     </div>
   )
 }
 
 export default SetupBox
 
+
+
 /**
- * Get peer info using DetecRTC
+ * Get Peer info using DetectRTC 
  * https://github.com/muaz-khan/DetectRTC
  * @returns Obj peer info
  */
-function getPeerInfo() {
+ function getPeerInfo(){
   return {
-    detectRTCversion: DetectRTC.version,
-    isWebRTCSupported: DetectRTC.isWebRTCSupported,
-    isMobileDevice: DetectRTC.isMobileDevice,
-    osName: DetectRTC.osName,
-    osVersion: DetectRTC.osVersion,
-    browserName: DetectRTC.browser.name,
-    browserVersion: DetectRTC.browser.version,
-  }
+      detectRTCversion: DetectRTC.version,
+      isWebRTCSupported: DetectRTC.isWebRTCSupported,
+      isMobileDevice: DetectRTC.isMobileDevice,
+      osName: DetectRTC.osName,
+      osVersion: DetectRTC.osVersion,
+      browserName: DetectRTC.browser.name,
+      browserVersion: DetectRTC.browser.version,
+    }
 }
 
+
 /**
- * Get approximative peer geolocation
- * @returns json
- */
+* Get approximative peer geolocation
+* @returns json
+*/
 function getPeerGeoLocation() {
   fetch(peerLoockupUrl)
     .then((res) => res.json())
@@ -262,4 +285,51 @@ function getPeerGeoLocation() {
       peerGeo = outJson
     })
     .catch((err) => console.error(err))
+}
+
+/**
+* https://webrtc.github.io/samples/src/content/getusermedia/resolution/
+*/
+function getVideoConstraints(vidoeQuality, videoMaxFrameRate, useVideo){
+  let frameRate = { max: videoMaxFrameRate }
+  switch (vidoeQuality) {
+    case 'useVideo':
+      return useVideo
+    // Firefox not support set frameRate (OverconstrainedError) O.o
+    case 'default':
+      return { frameRate: frameRate }
+    // video cam constraints default
+    case 'qvgaVideo':
+      return {
+        width: { exact: 320 },
+        height: { exact: 240 },
+        frameRate: frameRate,
+      } // video cam constraints low bandwidth
+    case 'vgaVideo':
+      return {
+        width: { exact: 640 },
+        height: { exact: 480 },
+        frameRate: frameRate,
+      } // video cam constraints medium bandwidth
+    case 'hdVideo':
+      return {
+        width: { exact: 1280 },
+        height: { exact: 720 },
+        frameRate: frameRate,
+      } // video cam constraints high bandwidth
+    case 'fhdVideo':
+      return {
+        width: { exact: 1920 },
+        height: { exact: 1080 },
+        frameRate: frameRate,
+      } // video cam constraints very high bandwidth
+    case '4kVideo':
+      return {
+        width: { exact: 3840 },
+        height: { exact: 2160 },
+        frameRate: frameRate,
+      } // video cam constraints ultra high bandwidth
+  default: 
+      return { frameRate: frameRate }
+  }
 }

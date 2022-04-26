@@ -11,6 +11,18 @@ export const testUpdate = () => async (dispatch, getState) => {
   dispatch({ type: 'test_update', payload: getState().testNum + 1 })
 }
 
+export const createLocalMedia = (stream) => async(dispatch, getState) => {
+  dispatch({type: 'set_local_mdiea_stream', payload: stream })
+}
+
 export const updateLocalMedia = (stream) => async (dispatch, getState) => {
-  dispatch({ type: 'set_local_media_stream', payload: stream })
+  dispatch({ type: 'update_local_media_stream', payload: stream })
+}
+
+export const audioUpdate = (option) => async(dispatch, getState) => {
+  dispatch({type: 'update_audio_setting', payload: option})
+}
+
+export const videoUpdate = (option) => async(dispatch, getState) => {
+  dispatch({type: 'update_video_setting', payload: option})
 }

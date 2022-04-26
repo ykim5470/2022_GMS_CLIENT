@@ -21,6 +21,16 @@ const initialState = {
   roomContents: 0,
   testNum: 1,
   localMediaStream: null,
+  mediaConstraints: {
+    useVideo: true, 
+    useAudio: true, 
+    myVideoStatus: true, 
+    myAudioStatus: true, 
+    myHandStatus: false,
+    isRecScreenSream: false, 
+    videoMaxFrameRate : 30 
+  },
+  test: true
 }
 
 // reducers
@@ -36,6 +46,16 @@ export const rootReducer = (state = initialState, action) => {
       return { ...state, testNum: action.payload }
     case 'set_local_media_stream':
       return { ...state, localMediaStream: action.payload }
+    case 'update_local_media_stream':
+      return {...state, localMediaStream: action.payload}
+    case 'update_audio_setting':
+      state.mediaConstraints.myAudioStatus = action.payload
+      state.mediaConstraints.useAudio  = action.payload
+      return {...state}
+      case 'update_video_setting':
+        state.mediaConstraints.myVideoStatus = action.payload
+        state.mediaConstraints.useVideo  = action.payload
+        return {...state}
     default:
       return state
   }

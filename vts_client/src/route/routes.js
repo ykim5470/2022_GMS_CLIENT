@@ -7,15 +7,15 @@ import { Route } from 'react-router-dom'
 /**
  * GUIDE
  */
-import Landing from './components/webrtc/guide/Landing'
-import GuideProfile from './components/webrtc/guide/GuideProfile'
-import GuideContents from './components/webrtc/guide/GuideContents'
-import Stream from './components/webrtc/stream/Stream'
+import Landing from '../components/webrtc/guide/Landing'
+import GuideProfile from '../components/webrtc/guide/GuideProfile'
+import GuideContents from '../components/webrtc/guide/GuideContents'
+import Stream from '../components/webrtc/stream/Stream'
 /**
  * USER
  */
-import User from './components/webrtc/user/User'
-import View from './components/webrtc/user/View'
+import User from '../components/webrtc/user/User'
+import View from '../components/webrtc/user/View'
 
 const routes = [
   /**

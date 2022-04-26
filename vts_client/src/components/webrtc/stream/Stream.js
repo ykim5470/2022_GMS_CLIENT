@@ -1,63 +1,57 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { useParams } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import React from 'react'
+import { useSelector} from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import {styled} from '@mui/material/styles'
+import {Button} from '@mui/material'
 
 import SetupBox from './SetupBox'
 import Media from './Media'
-import FeatureBar from './FeatureBar'
-import ChatBox from './ChatBox'
+
+
+import useRoomState from '../../../hooks/useRoomState/useRoomState'
+
+const Container = styled('div')({
+  display: 'grid',
+  gridTemplateRows: '1fr auto'
+})
+
+const Main = styled('main')((theme)=>({
+  overflow: 'hidden',
+  paddingBottom: `${theme.footerHeight}px`,
+  background: '#FFFFF'
+}))
+
 
 const Stream = () => {
   const state = useSelector((state) => state)
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
-  // const [localMediaStream, setLocalMediaStream] = useState(null)
-  const [myPeerId, setMyPeerId] = useState('')
-  // const peerConnections = useRef({})
-  // const peerConnection = useRef({})
-  // const localMedia = useRef({})
+  const roomState = useRoomState()
+  
 
-  // Room Id from url params
-  let { id } = useParams()
-
-  // useEffect(() => {
-  //   localMedia.current = state.localMediaStream
-  // }, [state.localMediaStream])
-
-  state.signalingSocket.on('connect', () => {
-    // set peer id when client connects to the server
-    setMyPeerId(state.signalingSocket.id)
-  })
-
-  // localMedia를 set한 이후의 업데이트 완료
-  console.log('Streamer peer id [ ' + myPeerId + ' ]')
-  console.log(state.localMediaStream)
-
-  // handleSessionDescription
-
-  // handleIceCandidate
-
-  // handlePeerStatus
-
-  // handleDisconnect
-
-  // handleRemovePeer
-
-  if (state.localMediaStream === null) {
-    return <SetupBox socket={state.signalingSocket} />
-  } else {
-    return (
-      <div>
-        셋업 먼저 거쳤다가 옴
+  if(!roomState){
+    return <div>Warning! This room is currently not connected to server! Please Create a new room.
+      <Button onClick={()=>{     
+      const id  = '1'
+      return navigate(`/guide${id}/landing`)}}>Back</Button>
+    </div>
+  }else{
+  return (
+    <Container>
+      {(state.localMediaStream == null) ? (
+        <SetupBox socket={state.signalingSocket} />
+      ):        
+      (
+      <Main>
         <Media
-          socket={state.signalingSocket}
-          localMedia={state.localMediaStream}
-        />
-        <FeatureBar />
-        <ChatBox />
-      </div>
-    )
-  }
+        socket={state.signalingSocket}
+        localMedia={state.localMediaStream}
+      />
+    </Main>) 
+    }
+    </Container>
+  )
+}
 }
 
 export default Stream

@@ -1,12 +1,8 @@
 import React from 'react'
-import { routes } from '../routes'
+import { routes } from './route/routes'
 import { Routes } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
 
 const App = () => {
-  const state = useSelector((state) => state)
-  const dispatch = useDispatch()
-
   return (
     <React.Fragment>
       {routes.map((route, index) => {

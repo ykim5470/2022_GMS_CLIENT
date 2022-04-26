@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import DetectRTC from 'detectrtc'
-import { toHaveDescription } from '@testing-library/jest-dom/dist/matchers'
+import {PostFetchQuotes} from '../../../api/fetch'
+
 
 const peerLoockupUrl = 'https://extreme-ip-lookup.com/json/?key=demo2'
 
@@ -27,11 +28,10 @@ const View = () => {
   const description = useRef({})
   const peerConnection = useRef({})
   const peerConnections = useRef({})
-  const chatDataChannels = useRef({})
   const videoRef = useRef({})
   const nickName = useRef('')
   const msgerInput = useRef('')
-  const [chatMessages,setChatMessages] = useState([])
+  const [chatMessage,setChatMessage] = useState([])
 
 
   const { id } = useParams()
@@ -102,55 +102,17 @@ const View = () => {
         // })
         videoRef.current.srcObject = event.streams[0]
       }
+    })
 
-      // handleRTCDataChannel(peer_id)
-      peerConnections.current[peer_id].ondatachannel = (event)=>{
-        console.log('handleRTCDataChannel'+ peer_id, event)
-        event.channel.onmessage =(msg)=>{
-          switch(event.channel.label){
-            case 'chatChannel':
-              try{
-                let dataMessage = JSON.parse(msg.data)
-                console.log(dataMessage)
-                switch(dataMessage.type){
-                  case 'chat':
-                    handleDataChannelChat(dataMessage)
-                    break
-                  case 'speech':
-                    console.log('speech')
-                    break
-                  case 'micVolume':
-                    console.log('mic volume')
-                    break
-                  default:
-                    return
-                }
-              }catch(err){
-                console.error('chat channel error', err)
-              }
-            case 'fileSharing':
-                try{
-                  let dataFile = msg.data
-                  // handleDataChannelFileSharing(dataFile)
-                  return 
-                }catch(err){
-                  console.error('file sharing channel error', err)
-                }
-              default:
-                  return
-          }
-        }
-      }
-
-      // createChatDataChannel(peer_id)
-      chatDataChannels.current[peer_id] = peerConnections.current[peer_id].createDataChannel(
-        'chatChannel'
+    // socket chat Receive 
+    state.signalingSocket.on('receiveChat', (data)=>{
+      const {from, msg} = data
+      console.log("This message is from :" +from)
+      console.log('The message is :' + msg)
+      console.log(chatMessage)
+      setChatMessage(
+        chatMessage => [...chatMessage, msg]
       )
-      chatDataChannels.current[peer_id].onopen = (event) =>{
-        console.log('chatDataChannels created', event)
-      }
-      // createFileSharingDataChannel(peer_id)
-
     })
 
     // handleAddPeer
@@ -226,83 +188,41 @@ const View = () => {
     })
   }, [])
 
-  
 
-
-      /**
- * Send message over Secure dataChannels
- * @param {*} from
- * @param {*} to
- * @param {*} msg
- * @param {*} privateMsg ture/false
- */
-function emitMsg(from, to, msg, privateMsg){
-  if(!msg)return 
-  let chatMessage = {
-    type: 'chat',
-    from: from, 
-    to: to, 
-    msg: msg,
-    privateMsg: privateMsg
-  }
-  console.log('Send msg', chatMessage)
-  setChatMessages(prevState => [
-    ...prevState, chatMessage
-  ]
-  )
-  sendToDataChannel(chatMessage)
-}
-
-/**
- * Send async data through RTC Data Channels 
- * @param {*} config object data
- */
-async function sendToDataChannel(config){
-  // console.log(chatDataChannels.current)
-  // setChatMessage(...chatDataChannels.current)
-  
-  for(let peer_id in chatDataChannels.current){
-    if(chatDataChannels.current[peer_id].readyState ==='open'){
-      await chatDataChannels.current[peer_id].send(JSON.stringify(config))
-    }
-  }
-}
 
 /**
  * Send Chat messages to peers in the room
  */
-function sendChatMessage(){
+async function sendChatMessage(){
   const msg = msgerInput
 
-  emitMsg('user1', 'toAll', msg.current, false)
 
-  // appendMessage('user1', 'avatar', 'right', msg, false)
-  msg.current = ''
-}
+  await PostFetchQuotes({
+    uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
+    body: {
+      RoomId: roomId, 
+      User: state.signalingSocket.id, 
+      Text: msgerInput.current
+    },
+    msg: 'Create Chat Data Log'
+  })
+  
 
-/**
- * handle Incoming Data Channel Chat Messages 
- * @param {*} dataMessage
- */
- function handleDataChannelChat(dataMessage){
-  if(!dataMessage)return 
+  state.signalingSocket.emit('chatting', (
+    {
+      channel: roomId,
+      peer_id: state.signalingSocket.id, 
+      msg: msgerInput.current}
+  ))
 
-  console.log('이건 스트리머 쪽에서 채팅을 쳤을 때 불린다.')
-  let msgFrom = dataMessage.from
-  let msgTo = dataMessage.to
-  let msg = dataMessage.msg
-  let msgPrivate = dataMessage.privateMsg
-
-  console.log('handleDataChannelChat', dataMessage)
-
-  setChatMessages(prevState => [
-    ...prevState, dataMessage
-  ]
+  console.log(chatMessage)
+  setChatMessage(
+    chatMessage => [...chatMessage, msg.current]
   )
-
-
 }
 
+
+console.log(chatMessage)
 
 
 
@@ -315,8 +235,7 @@ function sendChatMessage(){
       <div className='wrapper'>
         <div className='display-container'>
           <ul className='chatting-list'>
-  
-              {chatMessages.map((msgObj,idx) => {return <li key={idx}><span>{msgObj.from}: </span>{msgObj.msg}</li>})}
+              {chatMessage.map((msgObj,idx) => {return <li key={idx}>{msgObj}</li>})}
           </ul>
         </div>
         <div className='user-container'>
@@ -327,6 +246,7 @@ function sendChatMessage(){
           <span>
             <input type='text' className='chatting-input' ref={msgerInput} onChange={(e)=>{msgerInput.current = e.target.value}}/>
             <button className='send-button' onClick={sendChatMessage}>전송</button>
+
           </span>
       </div>
     </div>
