@@ -8,7 +8,7 @@ module.exports = class StoreProductCategory extends Sequelize.Model {
           autoIncrement: true, 
           primaryKey: true,
         },
-        Name: {
+        Type: {
           type: Sequelize.STRING,
           allowNull: false,
         },

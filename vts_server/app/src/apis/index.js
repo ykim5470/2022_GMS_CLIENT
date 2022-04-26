@@ -82,6 +82,7 @@ router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (re
     req.file
 
   console.log(req.file)
+  console.log(req.body)
 
 
   await Models.Channel.create({
@@ -108,6 +109,7 @@ router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (re
 
   res.status(200).json('roomCreate sucess')
 }catch(err){
+  // console.log(err)
   res.status(400).json(err)
 }
 })
