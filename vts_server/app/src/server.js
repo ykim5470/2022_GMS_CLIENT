@@ -17,7 +17,7 @@ const Logger = require('./helpers/Logger')
 const log = new Logger('server')
 
 const port = process.env.PORT || 4000 // must be the same to client.js signalingServerPort
-const isHttps = true
+const isHttps = false
 
 let io, server, host
 
@@ -53,10 +53,10 @@ io = new Server({
   maxHttpBufferSize: 1e7,
   pingTimeout: 60000,
   cors: {
-    origin: 'https://106.255.237.50:8080',
+    origin: '*',
     methods: ['GET', 'POST'],
-    allowedHeaders: ['my-custom-header'],
-    credentials: true,
+    //allowedHeaders: ['my-custom-header'],
+    //credentials: true,
   },
   ws: true
 }).listen(server)
@@ -91,9 +91,11 @@ let peers = {} // collect peers info grp by channels
 app.use(cors()) // Enable All CORS Requests for all origins
 app.use(compression()) // Compress all HTTP responses using GZip
 app.use(express.json()) // Api parse body data as json
-// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJsDoc)) // Swagger API documentation
-app.use('/api-guide', swaggerUi.serve, swaggerUi.setup(testSwaggerJsDoc)) // Swagger Test API documentation
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJsDoc)) // Swagger
+
 app.use('/uploads', express.static(path.join(__dirname + '/uploads/GUIDE/streaming/live/thumbnailSource/')))
+app.set('io', io); // io instance set for router 
 
 app.use('/', apiHandler)
 
@@ -219,6 +221,21 @@ io.sockets.on('connect', (socket) => {
     channels[channel][socket.id] = socket
     socket.channels[channel] = channel
   })
+
+  // chatting allocation 
+  socket.on('chatting', (config) =>{
+	const {channel, peer_id, msg} = config 
+	console.log(channel, peer_id, msg) 
+	  for(let id in channels[channel]) {
+		  if(id !== peer_id){
+			  channels[channel][id].emit('receiveChat', {
+				  from: peer_id, msg: msg})
+		  }
+	  }
+   	console.log(peers)
+   	console.log(channels)
+  })
+
 
   /**
    * Add peers to channel aka room
@@ -597,6 +614,15 @@ io.sockets.on('connect', (socket) => {
     let room_id = config.room_id
     // log.debug('Whiteboard send canvas', config);
     sendToRoom(room_id, socket.id, 'wbCanvasToJson', config)
+  })
+
+
+
+  socket.on('chat', (data, callback)=>{
+  console.log('server received from local client')
+  //const {user, msg} = data
+  return callback(data)
+  //socket.emit('chat-response', {user: user, msg: msg})  
   })
 
   socket.on('whiteboardAction', (config) => {

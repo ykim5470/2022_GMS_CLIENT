@@ -1,7 +1,7 @@
 swagger: "2.0"
 info: 
-  title: WebRTC API
-  description: Test WebRTC API with express
+  title: Test API
+  description: Test User API with express
   version: 1.0 
   contact: 
     email: ykim5470@vreducation.kr
@@ -95,12 +95,10 @@ paths:
   #                       CreatedAt:
   #                         type: string
   #             example: [{RoomId: ba11a782-c2bf-403c-9902-1794f5779ecb, setConfig: [{Title: test, Host: host, Thumbnail: uploads/GUIDE/streaming/live/thumbnailSource/xxxx.png, RoomCategory: 'living', CreatedAt: '2022-04-12T04:20:58:000Z'}]}]
-  #         400:
-  #           description: User Error (Invalid Request)
   /userInfo:
     get:
       summary: 사용자 정보 반환
-      responses: 
+      responses:
         200:
           description: SUCCESS
           schema:
@@ -135,6 +133,7 @@ paths:
       responses:
         201:
           description: Created
+<<<<<<< HEAD
           
           
   /updateUserInfo:
@@ -172,5 +171,42 @@ paths:
       responses:
         201:
           description: Deleted
+=======
 
+>>>>>>> a94ab28c583875491871a31f65e4212e1f2841cf
 
+  /updateUserInfo:
+    put:
+      summary: 사용자 정보 수정
+      parameters:
+        - in: body
+          name: userInfo
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              role:
+                type: string
+              message:
+                type: string
+      responses:
+        201:
+          description: Updated
+
+  /deleteUserInfo:
+    delete:
+      summary: 사용자 정보 수정
+      parameters:
+        - in: body
+          name: userInfo
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+      responses:
+        201:
+          description: Deleted

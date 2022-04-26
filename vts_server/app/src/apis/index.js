@@ -8,8 +8,12 @@ const liveThumbnailMulterSet = require('../middle/liveThumbnailMulter')
 const recResourceUpload = require('../middle/recUploadMulter')
 const testUpload = require('../middle/testUpload')
 const fileSizeFormatter = require('../helpers/fileUploaderController')
+<<<<<<< HEAD
 
 
+=======
+const testUpload = require('../middle/testUpload')
+>>>>>>> a94ab28c583875491871a31f65e4212e1f2841cf
 const Models = require('../../../models')
 
 
@@ -116,6 +120,22 @@ router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (re
 })
 
 
+router.post('/createChatLog', async(req,res) =>{
+ try{
+	//console.log(req.app.get('io'))
+	//console.log('채팅 생성 요청 받음')
+	const {RoomId, User, Text} = req.body
+	await Models.ChannelChatLog.create({
+		RoomId: RoomId,
+		User: User,
+		Text: Text
+	})
+	res.status(200).json('Chat log added')
+	}catch(err){
+	res.status(400).json(err)}
+ })
+
+
 router.post('/recordMediaUpload',recResourceUpload.array('resources',  2), async(req,res)=>{
   try{
     const {roomId, title, host, roomCategory} = req.body
@@ -169,38 +189,57 @@ router.get('/userInfo', async(req,res)=>{
   let userList = await Models.User.findAll({
     attributes: ['User', 'Role', 'Msg', 'id']
   })
+	console.log('get 요청')
   return res.status(200).json(userList)
 })
 
 router.post('/registerUserInfo', async(req,res)=>{
+<<<<<<< HEAD
   const [name, role, message] = req.body
+=======
+  const {name, role, message} = req.body
+>>>>>>> a94ab28c583875491871a31f65e4212e1f2841cf
   await Models.User.create({
     User: name,
     Role: role, 
     Msg: message
   })
+	console.log('post 요청')
   return res.status(200).json('User Information Registered Successfully!')
 })
 
 router.put('/updateUserInfo', async(req,res) =>{
+<<<<<<< HEAD
   const [id, name, role, message] = req.body
+=======
+  const {id, name, role, message} = req.body
+>>>>>>> a94ab28c583875491871a31f65e4212e1f2841cf
   await Models.User.update(
    {User: name, Role: role, Msg: message},
    {where: {id: id}}
   )
+	console.log('put 요청')
   return res.status(200).json('User Information Updated Successfully!')
 })
 
 router.delete('/deleteUserInfo', async(req,res)=>{
+<<<<<<< HEAD
   const [id] = req.body
+=======
+  const {id} = req.body
+>>>>>>> a94ab28c583875491871a31f65e4212e1f2841cf
     await Models.User.destroy({
     where: {id: id}
   })
+	console.log('delete 요청')
   return res.status(200).json('User Information Deleted Successfully!')
 })
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> a94ab28c583875491871a31f65e4212e1f2841cf
 /**
  * 인터뷰 과제2 
  */
@@ -209,7 +248,10 @@ router.get('/contents', async(req,res)=>{
   let roomConfig = await Models.Room.findAll({
     attributes: ['id', 'Image', 'Room', 'createdAt', 'updatedAt']
   })
+<<<<<<< HEAD
   console.log(roomConfig)
+=======
+>>>>>>> a94ab28c583875491871a31f65e4212e1f2841cf
   return res.status(200).json(roomConfig)
 })
 

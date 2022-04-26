@@ -8,7 +8,10 @@ const path = require('path')
 const swaggerJsDoc = YAML.load(path.join(__dirname + '/api.yaml'))
 
 const testSwaggerJsDoc = YAML.load(path.join(__dirname + '/test_api.yaml'))
+<<<<<<< HEAD
 
+=======
+>>>>>>> a94ab28c583875491871a31f65e4212e1f2841cf
 // console.log( path.join(__dirname + '../../src/apis/swagger/*.yaml'))
 
 // const options = {
