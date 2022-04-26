@@ -1,0 +1,99 @@
+swagger: "2.0"
+info: 
+  title: Room API
+  description: Test Room API with express
+  version: 1.0 
+  contact: 
+    email: ykim5470@vreducation.kr
+  servers: 
+    -url: "https://106.255.237.50:4000/"
+    description: Server host url 
+
+schemes: [https]
+
+paths:
+ /contents:
+    get:
+      summary: 컨텐츠 정보 반환
+      responses: 
+        200:
+          description: SUCCESS
+          schema:
+            type: object
+            properties:
+              Room:
+                type: string
+              Image:
+                type: string
+              id:
+                type: integer
+              createdAt:
+                type: date
+              updatedAt:
+                type: date
+            example: {Room: 'Test Room', Image: 'https://enjoystreet.io/imagePath', id: '1', createdAt: '2022-04-20T14:01:59.689Z', updatedAt: '2022-04-20T14:01:59.689Z'}
+
+ /createContent:
+    post:
+      summary: 컨텐츠 등록
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: image
+          type: file
+          required: true
+          description: image file upload.
+        - in: body
+          name: roomInfo
+          schema:
+            type: object
+            properties:
+              room:
+                type: string
+      responses:
+        201:
+          description: Created
+          
+          
+#  /updateContent:
+#     put:
+#       summary: 컨텐츠 수정
+#       consumes:
+#         - multipart/form-data
+#       parameters:
+#         - in: formData
+#           name: image
+#           type: file
+#           required: true
+#           description: image file upload.
+#         - in: body
+#           name: roomInfo
+#           schema:
+#             type: object
+#             properties:
+#               room:
+#                 type: string
+#               id:
+#                 type: integer
+#       responses:
+#         201:
+#           description: Updated
+  
+ /deleteContent:
+    delete:
+      summary: 컨텐츠 삭제
+      parameters:
+        - in: body
+          name: userInfo
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+      responses:
+        201:
+          description: Deleted
+
+
+
