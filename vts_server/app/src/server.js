@@ -71,7 +71,7 @@ sequelize
   })
 
 // Swagger config
-const { swaggerUi, swaggerJsDoc } = require('../api/swagger')
+const { swaggerUi, swaggerJsDoc, testSwaggerJsDoc } = require('../api/swagger')
 
 // Api config
 const apiBasePath = '/api/v1' // api endpoint path
@@ -91,7 +91,8 @@ let peers = {} // collect peers info grp by channels
 app.use(cors()) // Enable All CORS Requests for all origins
 app.use(compression()) // Compress all HTTP responses using GZip
 app.use(express.json()) // Api parse body data as json
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJsDoc)) // Swagger API documentation
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJsDoc)) // Swagger API documentation
+app.use('/api-guide', swaggerUi.serve, swaggerUi.setup(testSwaggerJsDoc)) // Swagger Test API documentation
 app.use('/uploads', express.static(path.join(__dirname + '/uploads/GUIDE/streaming/live/thumbnailSource/')))
 
 app.use('/', apiHandler)

@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize')
-module.exports = class User extends Sequelize.Model {
+module.exports = class Room extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
@@ -8,25 +8,22 @@ module.exports = class User extends Sequelize.Model {
             primaryKey: true,
             autoIncrement: true,   
         },
-        User: {
+        Image: {
           type: Sequelize.STRING,
           allowNull: false,
         },
-        Role: {
+        Room: {
           type: Sequelize.STRING,
-          allowNull: false,
-        },
-        Msg: {
-          type: Sequelize.STRING,
-          allowNull: false,
+          allowNull: true,
+          defaultValue: 'test'
         },
       },
       {
         sequelize,
         timestamps: true,
         underscored: false,
-        modelName: 'User',
-        tableName: 'User',
+        modelName: 'Room',
+        tableName: 'Room',
         paranoid: true,
         charset: 'utf8',
         collate: 'utf8_general_ci',

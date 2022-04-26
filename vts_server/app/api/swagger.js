@@ -7,6 +7,8 @@ const path = require('path')
 
 const swaggerJsDoc = YAML.load(path.join(__dirname + '/api.yaml'))
 
+const testSwaggerJsDoc = YAML.load(path.join(__dirname + '/test_api.yaml'))
+
 // console.log( path.join(__dirname + '../../src/apis/swagger/*.yaml'))
 
 // const options = {
@@ -28,4 +30,5 @@ const swaggerJsDoc = YAML.load(path.join(__dirname + '/api.yaml'))
 module.exports = {
   swaggerUi,
   swaggerJsDoc,
+  testSwaggerJsDoc
 }

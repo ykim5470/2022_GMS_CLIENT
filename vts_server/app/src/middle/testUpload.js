@@ -2,7 +2,7 @@ const multer = require('multer')
 const path = require('path')
 const uploadDir = path.join(
   __dirname,
-  '../uploads/GUIDE/streaming/rec/thumbnailSource',
+  '../uploads/',
 )
 
 console.log(uploadDir)

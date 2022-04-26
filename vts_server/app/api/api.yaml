@@ -104,8 +104,8 @@ paths:
         200:
           description: SUCCESS
           schema:
-            type: array
-            items:
+            type: object
+            properties:
               User:
                 type: string
               Role:
@@ -114,16 +114,63 @@ paths:
                 type: string
               Id:
                 type: string
-            example: [User: user1, Role: user, Msg: 'Hello World', Id: '0d953939-b6fc-4e4a-a322-421f49c5b207']
+            example: {User: user1, Role: user, Msg: 'Hello World', id: '1'}
 
 
   /registerUserInfo:
     post:
       summary: 사용자 정보 등록
+      parameters:
+        - in: body
+          name: userInfo
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              role:
+                type: string
+              message:
+                type: string
       responses:
-        200:
-          description: SUCCESS
+        201:
+          description: Created
           
-
+          
+  /updateUserInfo:
+    put:
+      summary: 사용자 정보 수정
+      parameters:
+        - in: body
+          name: userInfo
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              role:
+                type: string
+              message:
+                type: string
+      responses:
+        201:
+          description: Updated
+  
+  /deleteUserInfo:
+    delete:
+      summary: 사용자 정보 수정
+      parameters:
+        - in: body
+          name: userInfo
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+      responses:
+        201:
+          description: Deleted
 
 

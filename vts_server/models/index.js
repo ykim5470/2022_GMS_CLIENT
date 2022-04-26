@@ -13,6 +13,7 @@ const ChannelChatLog = require('./webrtc/channel_chat_log')
 const ChannelConcurrentUserLog = require('./webrtc/channel_ccu_log')
 
 const User = require('./webrtc/test_user')
+const Room = require('./webrtc/test_room')
 
 const db = {}
 const sequelize = new Sequelize(
@@ -46,7 +47,9 @@ db.ChannelLikeLog = ChannelLikeLog
 db.ChannelChatLog = ChannelChatLog
 db.ChannelConcurrentUserLog = ChannelConcurrentUserLog
 
+
 db.User = User
+db.Room = Room
 
 Channel.init(sequelize)
 ChannelSetConfig.init(sequelize)
@@ -56,7 +59,9 @@ ChannelLikeLog.init(sequelize)
 ChannelChatLog.init(sequelize)
 ChannelConcurrentUserLog.init(sequelize)
 
+
 User.init(sequelize)
+Room.init(sequelize)
 
 Channel.hasMany(ChannelSetConfig, {
   foreignKey: 'RoomId',

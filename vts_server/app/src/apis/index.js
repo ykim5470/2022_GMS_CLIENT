@@ -6,7 +6,9 @@ const router = express.Router()
 
 const liveThumbnailMulterSet = require('../middle/liveThumbnailMulter')
 const recResourceUpload = require('../middle/recUploadMulter')
+const testUpload = require('../middle/testUpload')
 const fileSizeFormatter = require('../helpers/fileUploaderController')
+
 
 const Models = require('../../../models')
 
@@ -163,14 +165,14 @@ router.post('/recordMediaUpload',recResourceUpload.array('resources',  2), async
 /**
  * 인터뷰 과제 
  */
-router.get('userInfo', async(req,res)=>{
+router.get('/userInfo', async(req,res)=>{
   let userList = await Models.User.findAll({
-    attributes: ['User', 'Role', 'Msg', 'Id']
+    attributes: ['User', 'Role', 'Msg', 'id']
   })
   return res.status(200).json(userList)
 })
 
-router.post('registerUserInfo', async(req,res)=>{
+router.post('/registerUserInfo', async(req,res)=>{
   const [name, role, message] = req.body
   await Models.User.create({
     User: name,
@@ -180,21 +182,66 @@ router.post('registerUserInfo', async(req,res)=>{
   return res.status(200).json('User Information Registered Successfully!')
 })
 
-router.put('updateUserInfo', async(req,res) =>{
+router.put('/updateUserInfo', async(req,res) =>{
   const [id, name, role, message] = req.body
   await Models.User.update(
    {User: name, Role: role, Msg: message},
-   {where: {Id: id}}
+   {where: {id: id}}
   )
   return res.status(200).json('User Information Updated Successfully!')
 })
 
-router.delete('deleteUserInfo', async(req,res)=>{
+router.delete('/deleteUserInfo', async(req,res)=>{
   const [id] = req.body
     await Models.User.destroy({
-    where: {Id: id}
+    where: {id: id}
   })
   return res.status(200).json('User Information Deleted Successfully!')
+})
+
+
+
+/**
+ * 인터뷰 과제2 
+ */
+router.get('/contents', async(req,res)=>{
+  // let imagePath = 
+  let roomConfig = await Models.Room.findAll({
+    attributes: ['id', 'Image', 'Room', 'createdAt', 'updatedAt']
+  })
+  console.log(roomConfig)
+  return res.status(200).json(roomConfig)
+})
+
+router.post('/createContent',testUpload.single('image'),async(req,res)=>{
+  const {room} = req.body
+  const {filename} = req.file
+
+  console.log(req.file)
+  console.log(req.body)
+  await Models.Room.create({
+    Image: filename,
+    Room: room
+  })
+  return res.status(200).json('Content Created Successfully!')
+})
+
+router.put('/updateContent', testUpload.single('image'),async(req,res)=>{
+  const {id, room} = req.body
+  const {filename} = req.file
+  await Models.Room.update({
+    Image: filename, Room: room},
+    {where: {id: id}}
+  )
+  return res.status(200).json('Content Information Updated Successfully!')
+})
+
+router.delete('/deleteContent', async(req,res)=>{
+  const {id} = req.body
+  await Models.Room.destroy({
+    where: {id: id}
+  })
+  return res.status(200).json('Content Information Deleted Successfully!')
 })
 
 module.exports = router
