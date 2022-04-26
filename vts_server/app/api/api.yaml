@@ -133,47 +133,6 @@ paths:
       responses:
         201:
           description: Created
-<<<<<<< HEAD
-          
-          
-  /updateUserInfo:
-    put:
-      summary: 사용자 정보 수정
-      parameters:
-        - in: body
-          name: userInfo
-          schema:
-            type: object
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              role:
-                type: string
-              message:
-                type: string
-      responses:
-        201:
-          description: Updated
-  
-  /deleteUserInfo:
-    delete:
-      summary: 사용자 정보 수정
-      parameters:
-        - in: body
-          name: userInfo
-          schema:
-            type: object
-            properties:
-              id:
-                type: integer
-      responses:
-        201:
-          description: Deleted
-=======
-
->>>>>>> a94ab28c583875491871a31f65e4212e1f2841cf
 
   /updateUserInfo:
     put:

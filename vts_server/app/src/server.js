@@ -71,7 +71,7 @@ sequelize
   })
 
 // Swagger config
-const { swaggerUi, swaggerJsDoc, testSwaggerJsDoc } = require('../api/swagger')
+const { swaggerUi, swaggerJsDoc } = require('../api/swagger')
 
 // Api config
 const apiBasePath = '/api/v1' // api endpoint path

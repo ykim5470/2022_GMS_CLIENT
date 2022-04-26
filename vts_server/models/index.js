@@ -12,6 +12,14 @@ const ChannelLikeLog = require('./webrtc/channel_like_log')
 const ChannelChatLog = require('./webrtc/channel_chat_log')
 const ChannelConcurrentUserLog = require('./webrtc/channel_ccu_log')
 
+
+const StoreBrand = require('./commerce/store_brand')
+const StoreProductDetail = require('./commerce/store_product_detail')
+const StoreProductCategory = require('./commerce/sotre_product_category')
+
+
+
+
 const db = {}
 const sequelize = new Sequelize(
   config.database,
@@ -45,6 +53,11 @@ db.ChannelChatLog = ChannelChatLog
 db.ChannelConcurrentUserLog = ChannelConcurrentUserLog
 
 
+db.StoreBrand = StoreBrand
+db.StoreProductDetail = StoreProductDetail
+db.StoreProductCategory = StoreProductCategory
+
+
 
 Channel.init(sequelize)
 ChannelSetConfig.init(sequelize)
@@ -53,6 +66,10 @@ ChannelProductConfig.init(sequelize)
 ChannelLikeLog.init(sequelize)
 ChannelChatLog.init(sequelize)
 ChannelConcurrentUserLog.init(sequelize)
+
+StoreBrand.init(sequelize)
+StoreProductDetail.init(sequelize)
+StoreProductCategory.init(sequelize)
 
 
 
@@ -85,4 +102,14 @@ Channel.hasMany(ChannelConcurrentUserLog, {
   onDelete: 'cascade',
 })
 
+
+StoreBrand.hasOne(StoreProductDetail, {
+  foreignKey: 'StoreBrandId',
+  onDelete: 'cascade'
+})
+
+StoreProductCategory.hasOne(StoreProductDetail, {
+  foreignKey: 'CategoryId',
+  onDelete: 'cascade'
+})
 module.exports = db
