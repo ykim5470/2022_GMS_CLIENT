@@ -2,8 +2,8 @@ import { io } from 'socket.io-client'
 
 const signalingServerPort = 4000
 // const signalingServer = 'https://106.255.237.50:4000'
-const signalingServer = process.env.REACT_APP_PUBLIC_IP
-// const signalingServer = process.env.REACT_APP_LOCAL_IP
+// const signalingServer = process.env.REACT_APP_PUBLIC_IP
+const signalingServer = process.env.REACT_APP_LOCAL_IP
 
 
 
@@ -53,7 +53,6 @@ export const rootReducer = (state = initialState, action) => {
       return {...state}
     case 'update_video_status':
       state.mediaConstraints.myVideoStatus = action.payload
-      // state.mediaConstraints.useVideo  = action.payload
       return {...state}
     case 'update_audio_constraint':  
       state.mediaConstraints.useAudio  = action.payload

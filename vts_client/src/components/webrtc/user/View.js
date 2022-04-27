@@ -201,8 +201,8 @@ async function sendChatMessage(){
 
 
   await PostFetchQuotes({
-    uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
-    // uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
+    // uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
+    uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
     body: {
       RoomId: roomId, 
       User: state.signalingSocket.id, 

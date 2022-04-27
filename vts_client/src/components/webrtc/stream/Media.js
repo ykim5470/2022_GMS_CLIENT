@@ -3,10 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
 
-import { audioConstraintUpdate, videoConstraintUpdate, updateLocalMedia } from '../../../redux/thunk'
+import { audioUpdate, videoUpdate, audioConstraintUpdate, videoConstraintUpdate, updateLocalMedia } from '../../../redux/thunk'
 
 import {PostFetchQuotes} from '../../../api/fetch'
 import DetectRTC from 'detectrtc'
+
+import { ToggleButtonGroup, ToggleButton } from '@mui/material'
+
 
 
 /**
@@ -17,32 +20,30 @@ import DetectRTC from 'detectrtc'
 const Media = (props) => {
   const state = useSelector(state => state)
   const dispatch = useDispatch()
+  // Audio & Media constraint
   const mediaConstraintsState = state.mediaConstraints
-
+  // WebRTC handling
   const signalingSocket = props.socket
-  // const localMedia = props.localMedia
   const peerConnections = useRef({})
   const peerConnection = useRef({})
   const description = useRef({})
+  // chat
   const nickName = useRef('')
   const msgerInput = useRef('')
+  const [chatMessage,setChatMessage] = useState([])
+  // camera mode
   const cameraMode = useRef('user')
+  // room id
   const { id } = useParams()
   const roomId = id
-  const [chatMessage,setChatMessage] = useState([])
   
-
-
 
   const videoRef = useRef({})
 
   const naviagte = useNavigate()
 
   useEffect(() => {
-    // if (state.localMediaStream && !videoRef.current.srcObject)
-    //   console.log(state.localMediaStream)
-    //   // localMedia.getVideoTracks()[0].enabled= true || false 
-      console.log(state.localMediaStream)
+
       videoRef.current.srcObject = state.localMediaStream
       
     //   var binaryData = []
@@ -204,8 +205,8 @@ async function sendChatMessage(){
   const msg = msgerInput
 
   await PostFetchQuotes({
-    uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
-    // uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
+    // uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
+    uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
     body: {
       RoomId: roomId, 
       User: signalingSocket.id, 
@@ -263,8 +264,6 @@ const swapCamera = () =>{
   console.log(cameraMode.current)
   // setup camera 
   cameraMode.current  = cameraMode.current === 'user' ? 'environment' : 'user'
-  // if(cameraMode.current === 'user') dispatch(videoConstraintUpdate(true)) // useVideo = true 
-  // else
    dispatch(videoConstraintUpdate({facingMode: {exact: cameraMode.current}})) // pass camera mode config to constraint 
 
   // some devices can't swap the cam, if have Video Track already in execution 
@@ -315,6 +314,27 @@ const refreshMyLocalStream = (stream, localAudioTrackChange=false) =>{
 const setMyVideoStatusTrue = () =>{}
 
 
+/**
+ * Switch on-off audio
+ */
+const audioController = () =>{  
+  const currentAudioOption = !mediaConstraintsState.myAudioStatus
+  dispatch(audioUpdate(currentAudioOption)) 
+  state.localMediaStream.getAudioTracks()[0].enabled = currentAudioOption
+
+}
+
+/**
+ * Switch on-off video 
+ */
+const videoController =()=>{
+  const currentVideoOption = !mediaConstraintsState.myVideoStatus
+  dispatch(videoUpdate(currentVideoOption))
+  state.localMediaStream.getVideoTracks()[0].enabled = currentVideoOption
+
+}
+
+
   return (
     <div className='media'>
       {/* Video */}
@@ -337,12 +357,36 @@ const setMyVideoStatusTrue = () =>{}
             <button className='send-button' onClick={sendChatMessage}>전송</button>
           </span>
       </div>
-      {/* MediaControl */}
-      <div className='mediaController'> 
+      {/* Swap Camera */}
+      <div className='swap-camera'> 
         <button className='swapCameraBtn' onClick={swapCamera}>
           카메라 전환
         </button>
       </div>
+      {/* MediaController */}
+      <ToggleButtonGroup onClick={videoController} aria-label='video toggle'>
+          {mediaConstraintsState.myVideoStatus ?           
+          (<ToggleButton value={mediaConstraintsState.myVideoStatus} aria-label='video off'>
+            video off 
+          </ToggleButton>)
+           :       
+            (<ToggleButton value={mediaConstraintsState.myVideoStatus} aria-label='video on'>
+            video on 
+          </ToggleButton>)}
+        </ToggleButtonGroup>
+
+        <ToggleButtonGroup onClick={audioController} aria-label='video toggle'>
+          {mediaConstraintsState.myAudioStatus ?           
+          (<ToggleButton value={mediaConstraintsState.myAudioStatus} aria-label='audio off'>
+            audio off 
+          </ToggleButton>)
+          : 
+         (<ToggleButton value={mediaConstraintsState.myAudioStatus} aria-label='audio on'>
+          audio on 
+        </ToggleButton>)
+         }
+        </ToggleButtonGroup>
+
     </div>
   )
 }
