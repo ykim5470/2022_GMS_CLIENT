@@ -18,8 +18,8 @@ const GuideContents = () =>
 
     useEffect(()=>{
       GetFetchQuotes({
-        // uri: `${process.env.REACT_APP_PUBLIC_IP}/guideRoomList`,
-        uri: `${process.env.REACT_APP_LOCAL_IP}/guideRoomList`,
+        uri: `${process.env.REACT_APP_PUBLIC_IP}/guideRoomList`,
+        // uri: `${process.env.REACT_APP_LOCAL_IP}/guideRoomList`,
         msg: 'GET current Room Contents information',
       }).then((result) => {
         setContents(result)
@@ -86,8 +86,8 @@ const GuideContents = () =>
 
       PostFetchQuotes({
         // uri: 'https://106.255.237.50:4000/recordMediaUpload',
-        // uri: `${process.env.REACT_APP_PUBLIC_IP}/recordMediaUpload`,
-        uri: `${process.env.REACT_APP_LOCAL_IP}/recordMediaUpload`,
+        uri: `${process.env.REACT_APP_PUBLIC_IP}/recordMediaUpload`,
+        // uri: `${process.env.REACT_APP_LOCAL_IP}/recordMediaUpload`,
 
         body: formData,
         msg: 'record media upload',
@@ -111,8 +111,8 @@ const GuideContents = () =>
         <br/>
         { contents.map((el,idx) => {
           // let thumnail = `https://106.255.237.50:4000/uploads/${el.setConfig[0].Thumbnail}`
-          // let thumnail = `${process.env.REACT_APP_PUBLIC_IP}/uploads/${el.setConfig[0].Thumbnail}`
-          let thumnail = `${process.env.REACT_APP_LOCAL_IP}/uploads/${el.setConfig[0].Thumbnail}`
+          let thumnail = `${process.env.REACT_APP_PUBLIC_IP}/uploads/${el.setConfig[0].Thumbnail}`
+          // let thumnail = `${process.env.REACT_APP_LOCAL_IP}/uploads/${el.setConfig[0].Thumbnail}`
         
 
 

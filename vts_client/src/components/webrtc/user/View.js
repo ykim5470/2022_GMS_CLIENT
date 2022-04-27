@@ -32,6 +32,7 @@ const View = () => {
   const peerConnection = useRef({})
   const peerConnections = useRef({})
   const videoRef = useRef({})
+  const muteRef = useRef(true)
   const nickName = useRef('')
   const msgerInput = useRef('')
   const [chatMessage,setChatMessage] = useState([])
@@ -104,6 +105,7 @@ const View = () => {
         //   videoRef.current.srcObject = event.streams[0]
         // })
         videoRef.current.srcObject = event.streams[0]
+        muteRef.current = false 
       }
     })
 
@@ -201,8 +203,8 @@ async function sendChatMessage(){
 
 
   await PostFetchQuotes({
-    // uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
-    uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
+    uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
+    // uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
     body: {
       RoomId: roomId, 
       User: state.signalingSocket.id, 
@@ -225,15 +227,15 @@ async function sendChatMessage(){
   )
 }
 
-
 console.log(chatMessage)
+
 
 
   return (
     <div className='user'>
       view page
       {/* Video */}
-      <video ref={videoRef} autoPlay playsInline muted />
+      <video ref={videoRef} autoPlay playsInline muted={muteRef.current} />
       {/* Chatting */}
       <div className='wrapper'>
         <div className='display-container'>

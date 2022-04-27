@@ -22,6 +22,7 @@ const Media = (props) => {
   const dispatch = useDispatch()
   // Audio & Media constraint
   const mediaConstraintsState = state.mediaConstraints
+  const muteRef = useRef(true)
   // WebRTC handling
   const signalingSocket = props.socket
   const peerConnections = useRef({})
@@ -45,6 +46,8 @@ const Media = (props) => {
   useEffect(() => {
 
       videoRef.current.srcObject = state.localMediaStream
+      muteRef.current = false 
+
       
     //   var binaryData = []
     //   // binaryData.push(localMedia)
@@ -205,8 +208,8 @@ async function sendChatMessage(){
   const msg = msgerInput
 
   await PostFetchQuotes({
-    // uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
-    uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
+    uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
+    // uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
     body: {
       RoomId: roomId, 
       User: signalingSocket.id, 
@@ -308,7 +311,9 @@ const refreshMyLocalStream = (stream, localAudioTrackChange=false) =>{
   // update global as well 
   console.log(stream) // renewed stream
   dispatch(updateLocalMedia(stream))
-  return videoRef.current.srcObject = stream
+   videoRef.current.srcObject = stream
+   muteRef.current = false 
+
 }
 
 const setMyVideoStatusTrue = () =>{}
@@ -338,7 +343,7 @@ const videoController =()=>{
   return (
     <div className='media'>
       {/* Video */}
-      <video ref={videoRef} autoPlay playsInline muted />
+      <video ref={videoRef} autoPlay playsInline muted={muteRef.current} />
 
       {/* Chatting */}
       <div className='wrapper'>

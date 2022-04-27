@@ -44,8 +44,8 @@ const Content = (props) => {
 
   useEffect(() => {
      GetFetchQuotes({
-        // uri: process.env.REACT_APP_PUBLIC_IP + '/roomList',
-      uri: process.env.REACT_APP_LOCAL_IP + '/roomList',
+        uri: process.env.REACT_APP_PUBLIC_IP + '/roomList',
+      // uri: process.env.REACT_APP_LOCAL_IP + '/roomList',
       msg: 'GET current Room Contents information',
     }).then((result) => {
       setContents(result)
@@ -58,10 +58,8 @@ const Content = (props) => {
       <div className='content'>
         {contents.map((el, idx) => 
         {
-          // let thumnail = `${process.env.REACT_APP_PUBLIC_IP}/uploads/${el.setConfig[0].Thumbnail}`
-          let thumnail = `${process.env.REACT_APP_LOCAL_IP}/uploads/${el.setConfig[0].Thumbnail}`
-
-          // let thumnail = `https://106.255.237.50:4000/uploads/${el.setConfig[0].Thumbnail}`
+          let thumnail = `${process.env.REACT_APP_PUBLIC_IP}/uploads/${el.setConfig[0].Thumbnail}`
+          // let thumnail = `${process.env.REACT_APP_LOCAL_IP}/uploads/${el.setConfig[0].Thumbnail}`
           return (
             <form key={idx}>
           <img width={100} height={50}alt='thumbnail' src={thumnail} />

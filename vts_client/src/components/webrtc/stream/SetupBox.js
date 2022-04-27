@@ -98,8 +98,8 @@ const SetupBox = (props) => {
 
     PostFetchQuotes({
       // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomCreate',
-      // uri: `${process.env.REACT_APP_PUBLIC_IP}/roomCreate`,
-      uri: `${process.env.REACT_APP_LOCAL_IP}/roomCreate`,
+      uri: `${process.env.REACT_APP_PUBLIC_IP}/roomCreate`,
+      // uri: `${process.env.REACT_APP_LOCAL_IP}/roomCreate`,
       body: formData,
       msg: 'Create Room',
     })

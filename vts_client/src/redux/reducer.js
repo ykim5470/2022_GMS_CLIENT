@@ -2,8 +2,8 @@ import { io } from 'socket.io-client'
 
 const signalingServerPort = 4000
 // const signalingServer = 'https://106.255.237.50:4000'
-// const signalingServer = process.env.REACT_APP_PUBLIC_IP
-const signalingServer = process.env.REACT_APP_LOCAL_IP
+const signalingServer = process.env.REACT_APP_PUBLIC_IP
+// const signalingServer = process.env.REACT_APP_LOCAL_IP
 
 
 
