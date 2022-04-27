@@ -18,8 +18,8 @@ const GuideContents = () =>
 
     useEffect(()=>{
       GetFetchQuotes({
-        // uri: 'https://106.255.237.50:4000/guideRoomList',
         uri: `${process.env.REACT_APP_PUBLIC_IP}/guideRoomList`,
+        // uri: `${process.env.REACT_APP_LOCAL_IP}/guideRoomList`,
         msg: 'GET current Room Contents information',
       }).then((result) => {
         setContents(result)
@@ -85,9 +85,9 @@ const GuideContents = () =>
       console.log(formData)
 
       PostFetchQuotes({
-        // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomCreate',
         // uri: 'https://106.255.237.50:4000/recordMediaUpload',
         uri: `${process.env.REACT_APP_PUBLIC_IP}/recordMediaUpload`,
+        // uri: `${process.env.REACT_APP_LOCAL_IP}/recordMediaUpload`,
 
         body: formData,
         msg: 'record media upload',
@@ -112,6 +112,8 @@ const GuideContents = () =>
         { contents.map((el,idx) => {
           // let thumnail = `https://106.255.237.50:4000/uploads/${el.setConfig[0].Thumbnail}`
           let thumnail = `${process.env.REACT_APP_PUBLIC_IP}/uploads/${el.setConfig[0].Thumbnail}`
+          // let thumnail = `${process.env.REACT_APP_LOCAL_IP}/uploads/${el.setConfig[0].Thumbnail}`
+        
 
 
           return (<>

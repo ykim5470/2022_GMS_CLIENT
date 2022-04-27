@@ -1,20 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+
+
+import { audioConstraintUpdate, videoConstraintUpdate, updateLocalMedia } from '../../../redux/thunk'
+
 import {PostFetchQuotes} from '../../../api/fetch'
+import DetectRTC from 'detectrtc'
+
 
 /**
  *
- * @param {socket instance, localMedia} props
+ * @param {socket instance} props
  * @returns Media component
  */
 const Media = (props) => {
+  const state = useSelector(state => state)
+  const dispatch = useDispatch()
+  const mediaConstraintsState = state.mediaConstraints
 
   const signalingSocket = props.socket
-  const localMedia = props.localMedia
+  // const localMedia = props.localMedia
   const peerConnections = useRef({})
   const peerConnection = useRef({})
   const description = useRef({})
-  const preload = useRef({})
   const nickName = useRef('')
   const msgerInput = useRef('')
   const cameraMode = useRef('user')
@@ -30,17 +39,19 @@ const Media = (props) => {
   const naviagte = useNavigate()
 
   useEffect(() => {
-    if (localMedia && !videoRef.current.srcObject)
-  
-
-      videoRef.current.srcObject = localMedia
-      var binaryData = []
-      binaryData.push(localMedia)
+    // if (state.localMediaStream && !videoRef.current.srcObject)
+    //   console.log(state.localMediaStream)
+    //   // localMedia.getVideoTracks()[0].enabled= true || false 
+      console.log(state.localMediaStream)
+      videoRef.current.srcObject = state.localMediaStream
+      
+    //   var binaryData = []
+    //   // binaryData.push(localMedia)
       
 
-      preload.current = window.URL.createObjectURL(new Blob(binaryData, {type: 'video/webm'}))
-      console.log(preload)
-      console.log(preload.current)
+    //   preload.current = window.URL.createObjectURL(new Blob(binaryData, {type: 'video/webm'}))
+    //   console.log(preload)
+    //   console.log(preload.current)
 
     // handleAddPeer
     signalingSocket.on('addPeer', (config) => {
@@ -82,8 +93,8 @@ const Media = (props) => {
       }
 
       // handleAddTracks(peer_id)
-      localMedia.getTracks().forEach((track) => {
-        peerConnections.current[peer_id].addTrack(track, localMedia)
+      state.localMediaStream.getTracks().forEach((track) => {
+        peerConnections.current[peer_id].addTrack(track, state.localMediaStream)
       })
 
       // handlRtcOffer
@@ -194,6 +205,7 @@ async function sendChatMessage(){
 
   await PostFetchQuotes({
     uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
+    // uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
     body: {
       RoomId: roomId, 
       User: signalingSocket.id, 
@@ -209,37 +221,98 @@ async function sendChatMessage(){
       msg: msgerInput.current}
   ))
 
-  console.log(chatMessage)
-
-
   setChatMessage(
     chatMessage => [...chatMessage, msg.current]
   )
 }
 
 
-// 카메라 전환
-const swapCamera = () =>{
+const myBrowserName = DetectRTC.browser.name
+
+const videoConstraints = myBrowserName ==='Firefox' ? getVideoConstraints('default', mediaConstraintsState.videoMaxFrameRate, mediaConstraintsState.useVideo) : getVideoConstraints('useVideo', mediaConstraintsState.videoMaxFrameRate, mediaConstraintsState.useVideo)
   
+
+const constraints = {
+  audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      sampleRate: 44100,
+    },
+    video: videoConstraints,
+   }
+
+/**
+ * Check if there is peer connections
+ * @returns truee, false 
+ */
+  const thereisPeerConnections = () =>{
+    if(Object.keys(peerConnections.current).length === 0) return false
+      return true
+  }
+
+/**
+ * Stop local video track 
+ * @returns Sender video track stop & update gloabl localMedia status  
+ */
+const stopLocalVideoTrack  = () =>{
+  return state.localMediaStream.getVideoTracks()[0].stop()
 }
 
+// Swap Camera 
+const swapCamera = () =>{
+  console.log(cameraMode.current)
+  // setup camera 
+  cameraMode.current  = cameraMode.current === 'user' ? 'environment' : 'user'
+  // if(cameraMode.current === 'user') dispatch(videoConstraintUpdate(true)) // useVideo = true 
+  // else
+   dispatch(videoConstraintUpdate({facingMode: {exact: cameraMode.current}})) // pass camera mode config to constraint 
 
-// /**
-//  * Check if can swap or not the cam, if yes show the button else hide it  
-// * */
-// function setSwapCameraBtn(){
-//   navigator.mediaDevices.enumerateDevices().then(devices => {
-//     const videoInput = devices.filter(device => device.kind ==='videoinput')
-//     if(videoInput.length > 1 && isMobileDevice){
-//       setSwapCameraBtn.addEventListener('click', e =>{
-//         swapCamera()
-//       })
-//     }else{
-//       setSwapCameraBtn.style.display = 'none'
-//     }
-//   })
-// } 
+  // some devices can't swap the cam, if have Video Track already in execution 
+  if(mediaConstraintsState.useVideo) stopLocalVideoTrack()
 
+  console.log(constraints)
+
+  navigator.mediaDevices.getUserMedia(constraints)
+  .then((camStream)=> {
+    console.log(camStream)
+    refreshMyStreamToPeers(camStream)
+    refreshMyLocalStream(camStream)
+    if(mediaConstraintsState.useVideo) setMyVideoStatusTrue()
+  }).catch((err)=>{
+    console.log('[Error] to swapping camera', err)
+  })
+}
+
+/**
+ * Refresh my stream changes to connected peers in the room 
+ * @param {*} stream 
+ * @param {*} localAudioTrackChange ture or false(default)
+ */
+ const refreshMyStreamToPeers = (stream, localAudioTrackChange=false) =>{
+  if(!thereisPeerConnections()) return 
+  console.log(peerConnections.current)
+
+  // refresh my stream to peers 
+  for(let peer_id  in peerConnections.current){
+    let videoSender = peerConnections.current[peer_id].getSenders().find((s)=>(s.track? s.track.kind ==='video' : false))
+    videoSender.replaceTrack(stream.getVideoTracks()[0])
+  }
+}
+
+/**
+ * Refresh my local stream 
+ * @param {*} stream
+ * @param {*} localAudiotrackChange true or false(default)
+ */
+const refreshMyLocalStream = (stream, localAudioTrackChange=false) =>{
+  stream.getVideoTracks()[0].enabled = true 
+  // update global as well 
+  console.log(stream) // renewed stream
+  dispatch(updateLocalMedia(stream))
+  return videoRef.current.srcObject = stream
+}
+
+const setMyVideoStatusTrue = () =>{}
 
 
   return (
@@ -266,10 +339,9 @@ const swapCamera = () =>{
       </div>
       {/* MediaControl */}
       <div className='mediaController'> 
-        <button className='swapCameraBtn' ref={cameraMode} onClick={swapCamera}>
+        <button className='swapCameraBtn' onClick={swapCamera}>
           카메라 전환
         </button>
-        
       </div>
     </div>
   )
@@ -285,3 +357,52 @@ const swapCamera = () =>{
 
 
 export default Media
+
+
+/**
+* https://webrtc.github.io/samples/src/content/getusermedia/resolution/
+*/
+function getVideoConstraints(vidoeQuality, videoMaxFrameRate, useVideo){
+  let frameRate = { max: videoMaxFrameRate }
+  switch (vidoeQuality) {
+    case 'useVideo':
+      return useVideo
+
+    case 'default':
+      // Firefox not support set frameRate (OverconstrainedError) O.o
+      return { frameRate: frameRate } 
+    // video cam constraints default
+    case 'qvgaVideo':
+      return {
+        width: { exact: 320 },
+        height: { exact: 240 },
+        frameRate: frameRate,
+      } // video cam constraints low bandwidth
+    case 'vgaVideo':
+      return {
+        width: { exact: 640 },
+        height: { exact: 480 },
+        frameRate: frameRate,
+      } // video cam constraints medium bandwidth
+    case 'hdVideo':
+      return {
+        width: { exact: 1280 },
+        height: { exact: 720 },
+        frameRate: frameRate,
+      } // video cam constraints high bandwidth
+    case 'fhdVideo':
+      return {
+        width: { exact: 1920 },
+        height: { exact: 1080 },
+        frameRate: frameRate,
+      } // video cam constraints very high bandwidth
+    case '4kVideo':
+      return {
+        width: { exact: 3840 },
+        height: { exact: 2160 },
+        frameRate: frameRate,
+      } // video cam constraints ultra high bandwidth
+  default: 
+      return
+  }
+}

@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import DetectRTC from 'detectrtc'
 import {PostFetchQuotes} from '../../../api/fetch'
+import axios from 'axios'
+import { dblClick } from '@testing-library/user-event/dist/click'
+import { modalClasses } from '@mui/material'
 
 
 const peerLoockupUrl = 'https://extreme-ip-lookup.com/json/?key=demo2'
@@ -199,6 +202,7 @@ async function sendChatMessage(){
 
   await PostFetchQuotes({
     uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
+    // uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
     body: {
       RoomId: roomId, 
       User: state.signalingSocket.id, 
@@ -223,7 +227,6 @@ async function sendChatMessage(){
 
 
 console.log(chatMessage)
-
 
 
   return (

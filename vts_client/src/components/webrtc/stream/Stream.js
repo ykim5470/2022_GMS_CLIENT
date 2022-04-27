@@ -45,7 +45,6 @@ const Stream = () => {
       <Main>
         <Media
         socket={state.signalingSocket}
-        localMedia={state.localMediaStream}
       />
     </Main>) 
     }

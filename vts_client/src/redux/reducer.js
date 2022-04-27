@@ -1,17 +1,17 @@
 import { io } from 'socket.io-client'
 
 const signalingServerPort = 4000
-// const signalingServer = 'https://dbd6-211-171-1-210.ngrok.io'
 // const signalingServer = 'https://106.255.237.50:4000'
-// const signalingServer = 'https://enjoystreet.kr'
 const signalingServer = process.env.REACT_APP_PUBLIC_IP
+// const signalingServer = process.env.REACT_APP_LOCAL_IP
+
 
 
 let signalingSocket = io(signalingServer, {
-  // withCredentials: true,
-  // extraHeaders: {
-  //   'my-custom-header': 'webrtcSocketFromClient',
-  // },
+  withCredentials: true,
+  extraHeaders: {
+    'my-custom-header': 'webrtcSocketFromClient',
+  },
 })
 
 // init state
@@ -24,7 +24,7 @@ const initialState = {
   mediaConstraints: {
     useVideo: true, 
     useAudio: true, 
-    myVideoStatus: true, 
+    myVideoStatus: true,
     myAudioStatus: true, 
     myHandStatus: false,
     isRecScreenSream: false, 
@@ -48,14 +48,19 @@ export const rootReducer = (state = initialState, action) => {
       return { ...state, localMediaStream: action.payload }
     case 'update_local_media_stream':
       return {...state, localMediaStream: action.payload}
-    case 'update_audio_setting':
+    case 'update_audio_status':
       state.mediaConstraints.myAudioStatus = action.payload
+      return {...state}
+    case 'update_video_status':
+      state.mediaConstraints.myVideoStatus = action.payload
+      // state.mediaConstraints.useVideo  = action.payload
+      return {...state}
+    case 'update_audio_constraint':  
       state.mediaConstraints.useAudio  = action.payload
       return {...state}
-      case 'update_video_setting':
-        state.mediaConstraints.myVideoStatus = action.payload
-        state.mediaConstraints.useVideo  = action.payload
-        return {...state}
+    case 'update_video_constraint':
+      state.mediaConstraints.useVideo  = action.payload
+      return {...state}
     default:
       return state
   }

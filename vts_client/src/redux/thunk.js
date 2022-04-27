@@ -12,7 +12,7 @@ export const testUpdate = () => async (dispatch, getState) => {
 }
 
 export const createLocalMedia = (stream) => async(dispatch, getState) => {
-  dispatch({type: 'set_local_mdiea_stream', payload: stream })
+  dispatch({type: 'set_local_media_stream', payload: stream })
 }
 
 export const updateLocalMedia = (stream) => async (dispatch, getState) => {
@@ -20,9 +20,17 @@ export const updateLocalMedia = (stream) => async (dispatch, getState) => {
 }
 
 export const audioUpdate = (option) => async(dispatch, getState) => {
-  dispatch({type: 'update_audio_setting', payload: option})
+  dispatch({type: 'update_audio_status', payload: option})
 }
 
 export const videoUpdate = (option) => async(dispatch, getState) => {
-  dispatch({type: 'update_video_setting', payload: option})
+  dispatch({type: 'update_video_status', payload: option})
+}
+
+export const audioConstraintUpdate = (option) => async(dispatch, getState) => {
+  dispatch({type: 'update_audio_constraint', payload: option})
+}
+
+export const videoConstraintUpdate = (option) => async(dispatch, getState) => {
+  dispatch({type: 'update_video_constraint', payload: option})
 }

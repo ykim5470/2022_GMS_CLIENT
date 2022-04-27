@@ -33,7 +33,7 @@ const SetupBox = (props) => {
   const audioController = () =>{
     useAudio.current = !mediaConstraintsState.useAudio
     const currentAudioOption = useAudio.current
-    dispatch(audioUpdate(currentAudioOption))
+    dispatch(audioUpdate(currentAudioOption)) // myVideoStatus = true || false && useVideo = constraint 
   }
 
   const videoController =()=>{
@@ -59,7 +59,7 @@ const SetupBox = (props) => {
   const myBrowserName = DetectRTC.browser.name
 
   const videoConstraints = myBrowserName ==='Firefox' ? getVideoConstraints('useVideo', mediaConstraintsState.videoMaxFrameRate, mediaConstraintsState.useVideo) : getVideoConstraints('default', mediaConstraintsState.videoMaxFrameRate, mediaConstraintsState.useVideo)
-
+  
 
   const constraints = {
     audio: {
@@ -90,15 +90,16 @@ const SetupBox = (props) => {
     formData.append('roomCategory', roomCategory.current)
 
     formData.append('storePath', roomStorePath.current)
-    formData.append('storeCategory', roomStoreCategory.currnet)
-    formData.append('storeId', roomStoreId.currnet)
+    formData.append('storeCategory', 'dummy')
+    formData.append('storeId', 1)
     formData.append('productId', roomProductId.current)
+
+    console.log(formData)
 
     PostFetchQuotes({
       // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomCreate',
-      // uri: 'https://106.255.237.50:4000/roomCreate',
       uri: `${process.env.REACT_APP_PUBLIC_IP}/roomCreate`,
-
+      // uri: `${process.env.REACT_APP_LOCAL_IP}/roomCreate`,
       body: formData,
       msg: 'Create Room',
     })
@@ -107,7 +108,7 @@ const SetupBox = (props) => {
 
     state.signalingSocket.emit('join', {
       channel: roomId,
-      peer_info: peerInfo, // peerInfo
+      peer_name: peerInfo, // peerInfo
       peer_role: 'host', // host or user
       peer_geo: peerGeo, // peerGeo
       peer_video: mediaConstraintsState.myVideoStatus, // myVidoeStatus
@@ -119,14 +120,14 @@ const SetupBox = (props) => {
 
   navigator.mediaDevices.getUserMedia(constraints).then(stream =>{
     console.log('Access granted to audio/video')
+    stream.getVideoTracks()[0].enabled = mediaConstraintsState.myVideoStatus 
+    stream.getAudioTracks()[0].enabled = mediaConstraintsState.myAudioStatus 
     return dispatch(createLocalMedia(stream))
 })
 
-
-
     event.preventDefault()
   }
-
+  
   return (
     <div className='setupBox'>
       <div>setupBox component</div>
@@ -226,24 +227,24 @@ const SetupBox = (props) => {
 
         <input type='submit' value='setup done' />
       </form>
-      <ToggleButtonGroup value={useVideo.current} onClick={videoController} aria-label='video toggle'>
+      <ToggleButtonGroup onClick={videoController} aria-label='video toggle'>
           {useVideo.current ?           
-          (<ToggleButton value={false} aria-label='video off'>
+          (<ToggleButton  value={useVideo} aria-label='video off'>
             video off 
           </ToggleButton>)
            :       
-            (<ToggleButton value={true} aria-label='video on'>
+            (<ToggleButton value={useVideo} aria-label='video on'>
             video on 
           </ToggleButton>)}
         </ToggleButtonGroup>
 
-        <ToggleButtonGroup value={useAudio.current} onClick={audioController} aria-label='video toggle'>
+        <ToggleButtonGroup onClick={audioController} aria-label='video toggle'>
           {useAudio.current ?           
-          (<ToggleButton  aria-label='audio off'>
+          (<ToggleButton value={useAudio} aria-label='audio off'>
             audio off 
           </ToggleButton>)
           : 
-         (<ToggleButton  aria-label='audio on'>
+         (<ToggleButton value={useVideo} aria-label='audio on'>
           audio on 
         </ToggleButton>)
          }

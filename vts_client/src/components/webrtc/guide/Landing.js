@@ -10,6 +10,7 @@ const Landing = () =>
       GetFetchQuotes({
         // uri: 'https://106.255.237.50:4000/createRoomNumber',
         uri: `${process.env.REACT_APP_PUBLIC_IP}/createRoomNumber`,
+        // uri: `${process.env.REACT_APP_LOCAL_IP}/createRoomNumber`,
 
         msg: 'Get Random room ID',
       }).then((result) => {
