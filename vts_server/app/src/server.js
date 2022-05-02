@@ -53,7 +53,7 @@ io = new Server({
   maxHttpBufferSize: 1e7,
   pingTimeout: 60000,
   cors: {
-    origin: 'https://106.255.237.50:8080',
+    origin: 'https://106.255.237.50:5000',
     methods: ['GET', 'POST'],
     allowedHeaders: ['my-custom-header'],
     credentials: true,
