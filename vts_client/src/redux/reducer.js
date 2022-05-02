@@ -14,6 +14,7 @@ let signalingSocket = io(signalingServer, {
   },
 })
 
+
 // init state
 const initialState = {
   dummy: 'dummy',
