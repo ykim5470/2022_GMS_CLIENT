@@ -7,7 +7,10 @@ const http = require('http')
 const https = require('https')
 const compression = require('compression')
 const express = require('express')
+const session= require('express-session')
 const cors = require('cors')
+const cookieParser = require('cookie-parser')
+const passport = require('passport')
 const path = require('path')
 const { sequelize } = require('../../models')
 const apiHandler = require('./apis/index')
@@ -18,6 +21,7 @@ const log = new Logger('server')
 
 const port = process.env.PORT || 4000 // must be the same to client.js signalingServerPort
 const isHttps = true
+const SequelizeStore = require('connect-session-sequelize')(session.Store)
 
 let io, server, host
 
@@ -88,9 +92,28 @@ let channels = {} // collect channels
 let sockets = {} // collect sockets
 let peers = {} // collect peers info grp by channels
 
+// Session use 
+app.use(
+  session({
+    resave: false,
+    saveUninitialized: true, 
+    secret: process.env.COOKIE_SECRET,
+    cookie: {
+      httpOnly: true, 
+      secure: true, 
+      maxAge: 2000 * 60 * 60 // 2 hour
+    },
+    store: new SequelizeStore({
+      db: sequelize
+    })
+  })
+)
+app.use(cookieParser()) // Use Cookie parser
 app.use(cors()) // Enable All CORS Requests for all origins
 app.use(compression()) // Compress all HTTP responses using GZip
 app.use(express.json()) // Api parse body data as json
+app.use(passport.initialize()) // Initialize passport 
+app.use(passport.session()) 
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJsDoc)) // Swagger
 
@@ -98,6 +121,7 @@ app.use('/uploads', express.static(path.join(__dirname + '/uploads/GUIDE/streami
 app.set('io', io); // io instance set for router 
 
 app.use('/', apiHandler)
+
 
 const iceServers = [
   {
@@ -222,18 +246,14 @@ io.sockets.on('connect', (socket) => {
     socket.channels[channel] = channel
   })
 
-  // chatting allocation 
+  // Chatting allocation 
   socket.on('chatting', (config) =>{
 	const {channel, peer_id, msg} = config 
-	console.log(channel, peer_id, msg) 
-	  for(let id in channels[channel]) {
-		  if(id !== peer_id){
-			  channels[channel][id].emit('receiveChat', {
-				  from: peer_id, msg: msg})
-		  }
-	  }
-   	console.log(peers)
-   	console.log(channels)
+  for(let id in channels[channel]) {
+    if(id !== peer_id){
+      channels[channel][id].emit('receiveChat', {from: peer_id, msg: msg})
+    }
+    }
   })
 
 
@@ -242,9 +262,6 @@ io.sockets.on('connect', (socket) => {
    * @param {*} channel
    */
   function addPeerTo(channel) {
-    // console.log(channels)
-    // console.log(channel) // room name aka. 47819WarmPlum
-    // console.log(channels) // A만 들어왔을 경우 {} B가 들어왔을 경우 {A}
     let host_socket_obj = channels[channel]
     let host_socket_id = Object.keys(host_socket_obj)[0]
     let host_socket_instance = host_socket_obj[host_socket_id]
@@ -304,15 +321,13 @@ io.sockets.on('connect', (socket) => {
    * Relay ICE to peers
    */
   socket.on('relayICE', (config) => {
-    console.log('이건 relay 되었을 때 이다. user 측에서 이건 되는 건가?')
     let peer_id = config.peer_id
     let ice_candidate = config.ice_candidate
 
-    // log.debug('[' + socket.id + '] relay ICE-candidate to [' + peer_id + '] ', {
-    //     address: config.ice_candidate,
-    // });
-    console.log('이건 peer_id' + peer_id)
-    console.log('이건 socket id' + socket.id)
+    log.debug('[' + socket.id + '] relay ICE-candidate to [' + peer_id + '] ', {
+        address: config.ice_candidate,
+    });
+
     sendToPeer(peer_id, sockets, 'iceCandidate', {
       peer_id: socket.id,
       ice_candidate: ice_candidate,

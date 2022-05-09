@@ -1,16 +1,18 @@
 'use strict'
 
 const express = require('express')
+const passport = require('../middle/passport')
 const { v4: uuidV4 } = require('uuid')
 const router = express.Router()
 
-const liveThumbnailMulterSet = require('../middle/liveThumbnailMulter')
-const recResourceUpload = require('../middle/recUploadMulter')
+const liveThumbnailMulterSet = require('../middle/multer/liveThumbnailMulter')
+const recResourceUpload = require('../middle/multer/recUploadMulter')
 const fileSizeFormatter = require('../helpers/fileUploaderController')
 const Models = require('../../../models')
 
 
 router.get('/createRoomNumber', (req, res) => {
+  console.log(req.session)
   const randomRoomId = uuidV4()
   try {
     return res.status(200).json({ roomId: randomRoomId })
@@ -42,6 +44,7 @@ router.get('/guideRoomList', async (req, res) => {
 })
 
 router.get('/roomList', async (req, res) => {
+  console.log(req.session)
 
   let roomList = await Models.Channel.findAll({
   include: [
@@ -59,8 +62,10 @@ router.get('/roomList', async (req, res) => {
 
 
  res.status(200).json(roomListObject)
-
 })
+
+
+
 
 /**
  * @param {req.body} - title, host, roomId
@@ -173,6 +178,15 @@ router.post('/recordMediaUpload',recResourceUpload.array('resources',  2), async
   }catch(err){
     console.log(err)
     res.status(400).json(err)
+  }
+})
+
+
+router.post('/guideLogin',passport.authenticate('local'),(req,res,next)=>{
+  try{
+    res.status(200).json({token: req.session.passport.user})
+  }catch(err){
+    console.error(err)
   }
 })
 
