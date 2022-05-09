@@ -8,8 +8,6 @@ passport.serializeUser((user, done)=>{
     done(null, user)
 })
 
-// Pass local strategy to passport 
-// Request body (email, password)
 passport.use(
     new LocalStrategy({usernameField: 'email', passwordField: 'password', session: true, passReqToCallback: true}, async(req, email, password, done) =>{
         try{
@@ -36,11 +34,9 @@ passport.use(
                         done(null, sessUser.dataValues)
                         
                     }else{
-                        // Password not matched 
                         done(null, false, {message: 1})
                     }
                 }else{
-                    // Id not matched
                     done(null, false, {message: 2})
                 }
         }catch(err){

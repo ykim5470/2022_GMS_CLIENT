@@ -32,7 +32,6 @@ router.get('/guideRoomList', async (req, res) => {
        attributes: ['Title', 'Host', 'Thumbnail', 'RoomCategory', 'CreatedAt']
      }
    ],
-  //  where:{IsActivate: 1}, guide id will be received from reqest query 
    attributes: ['RoomId']
   })
 
@@ -44,8 +43,6 @@ router.get('/guideRoomList', async (req, res) => {
 })
 
 router.get('/roomList', async (req, res) => {
-  console.log(req.session)
-
   let roomList = await Models.Channel.findAll({
   include: [
     {
@@ -66,11 +63,6 @@ router.get('/roomList', async (req, res) => {
 
 
 
-
-/**
- * @param {req.body} - title, host, roomId
- * @param {req.file} - thumbnail data
- */
 router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (req, res) => {
   try{
   const {
@@ -85,9 +77,6 @@ router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (re
   } = req.body
   const { fieldname, originalname, destination, filename, path, size } =
     req.file
-
-  console.log(req.file)
-  console.log(req.body)
 
 
   await Models.Channel.create({
@@ -114,7 +103,6 @@ router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (re
 
   res.status(200).json('roomCreate sucess')
 }catch(err){
-  // console.log(err)
   res.status(400).json(err)
 }
 })
@@ -122,8 +110,6 @@ router.post('/roomCreate', liveThumbnailMulterSet.single('thumbnail'), async (re
 
 router.post('/createChatLog', async(req,res) =>{
  try{
-	//console.log(req.app.get('io'))
-	//console.log('채팅 생성 요청 받음')
 	const {RoomId, User, Text} = req.body
 	await Models.ChannelChatLog.create({
 		RoomId: RoomId,
@@ -140,7 +126,6 @@ router.post('/recordMediaUpload',recResourceUpload.array('resources',  2), async
   try{
     const {roomId, title, host, roomCategory} = req.body
     
-    console.log(req.body)
     let filesArray = []
     req.files.forEach(el => {
       const file = {

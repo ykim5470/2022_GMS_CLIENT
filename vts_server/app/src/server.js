@@ -19,14 +19,10 @@ const app = express()
 const Logger = require('./helpers/Logger')
 const log = new Logger('server')
 
-<<<<<<< HEAD
-const port = process.env.PORT || 4000 // must be the same to client.js signalingServerPort
-const isHttps = true
+
 const SequelizeStore = require('connect-session-sequelize')(session.Store)
-=======
-const port = process.env.PORT || 5000 // must be the same to client.js signalingServerPort
+const port = process.env.PORT || 5000 
 const isHttps = false
->>>>>>> 3f7324467fe6605bb158c311a7baa74bda4c80bb
 
 let io, server, host
 
@@ -54,10 +50,6 @@ if (isHttps) {
   host = 'https://' + 'localhost' + ':' + port
 }
 
-/*  
-    Set maxHttpBufferSize from 1e6 (1MB) to 1e7 (10MB)
-    Set pingTimeout from 20000 ms to 60000 ms 
-*/
 io = new Server({
   maxHttpBufferSize: 1e7,
   pingTimeout: 60000,
@@ -79,25 +71,15 @@ sequelize
     console.log(err)
   })
 
-// Swagger config
 const { swaggerUi, swaggerJsDoc } = require('../api/swagger')
 
-// Api config
-const apiBasePath = '/api/v1' // api endpoint path
-const api_docs = host + apiBasePath + '/docs' // api docs
+const apiBasePath = '/api/v1' 
+const api_docs = host + apiBasePath + '/docs' 
 const api_key_secret = process.env.API_KEY_SECRET || 'mirotalk_default_secret'
+let channels = {} 
+let sockets = {} 
+let peers = {} 
 
-// Turn config
-const turnEnabled = process.env.TURN_ENABLED
-const turnUrls = process.env.TURN_URLS
-const turnUsername = process.env.TURN_USERNAME
-const turnCredential = process.env.TURN_PASSWORD
-
-let channels = {} // collect channels
-let sockets = {} // collect sockets
-let peers = {} // collect peers info grp by channels
-
-// Session use 
 app.use(
   session({
     resave: false,
@@ -113,18 +95,17 @@ app.use(
     })
   })
 )
-app.use(cookieParser()) // Use Cookie parser
-app.use(cors()) // Enable All CORS Requests for all origins
-app.use(compression()) // Compress all HTTP responses using GZip
-app.use(express.json()) // Api parse body data as json
-app.use(passport.initialize()) // Initialize passport 
+app.use(cookieParser())
+app.use(cors()) 
+app.use(compression())
+app.use(express.json()) 
+app.use(passport.initialize()) 
 app.use(passport.session()) 
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJsDoc)) // Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJsDoc)) 
 
 app.use('/uploads', express.static(path.join(__dirname + '/uploads/GUIDE/streaming/live/thumbnailSource/')))
-app.set('io', io); // io instance set for router 
-
+app.set('io', io); 
 app.use('/', apiHandler)
 
 
@@ -140,75 +121,23 @@ const iceServers = [
   },
 ]
 
-if (turnEnabled == 'true') {
-  iceServers.push({
-    urls: turnUrls,
-    username: turnUsername,
-    credential: turnCredential,
-  })
-}
 
-/**
- * Start Local Server with ngrok https tunnel (optional)
- */
-server.listen(port, null, () => {
-  log.debug(
-    `%c
 
-	███████╗██╗ ██████╗ ███╗   ██╗      ███████╗███████╗██████╗ ██╗   ██╗███████╗██████╗ 
-	██╔════╝██║██╔════╝ ████╗  ██║      ██╔════╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗
-	███████╗██║██║  ███╗██╔██╗ ██║█████╗███████╗█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝
-	╚════██║██║██║   ██║██║╚██╗██║╚════╝╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗
-	███████║██║╚██████╔╝██║ ╚████║      ███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║
-	╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝      ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝ started...
 
-	`,
-    'font-family:monospace',
-  )
-
-  // server settings
-  log.debug('settings', {
-    server: host,
-    api_docs: api_docs,
-    api_key_secret: api_key_secret,
-    iceServers: iceServers,
-  })
-})
-
-/**
- * Users will connect to the signaling server, after which they'll issue a "join"
- * to join a particular channel. The signaling server keeps track of all sockets
- * who are in a channel, and on join will send out 'addPeer' events to each pair
- * of users in a channel. When clients receive the 'addPeer' even they'll begin
- * setting up an RTCPeerConnection with one another. During this process they'll
- * need to relay ICECandidate information to one another, as well as SessionDescription
- * information. After all of that happens, they'll finally be able to complete
- * the peer connection and will be in streaming audio/video between eachother.
- * On peer connected
- */
 io.sockets.on('connect', (socket) => {
   log.debug('[' + socket.id + '] connection accepted')
 
   socket.channels = {}
   sockets[socket.id] = socket
 
-  /**
-   * On peer diconnected
-   */
   socket.on('disconnect', (reason) => {
     for (let channel in socket.channels) {
       removePeerFrom(channel)
     }
-    log.debug('[' + socket.id + '] disconnected', { reason: reason })
     delete sockets[socket.id]
   })
 
-  /**
-   * On peer join
-   */
   socket.on('join', (config) => {
-    log.debug('[' + socket.id + '] join ', config)
-
     let channel = config.channel
     let peer_name = config.peer_name
     let peer_role = config.peer_role
@@ -218,23 +147,17 @@ io.sockets.on('connect', (socket) => {
     let peer_rec = config.peer_rec
 
     if (channel in socket.channels) {
-      log.debug('[' + socket.id + '] [Warning] already joined', channel)
       return
     }
-    // no channel aka room in channels init
     if (!(channel in channels)) channels[channel] = {}
 
-    // no channel aka room in peers init
     if (!(channel in peers)) peers[channel] = {}
 
-    // room locked by the participants can't join
     if (peers[channel]['Locked'] === true) {
-      log.debug('[' + socket.id + '] [Warning] Room Is Locked', channel)
       socket.emit('roomIsLocked')
       return
     }
 
-    // collect peers info grp by channels
     peers[channel][socket.id] = {
       peer_name: peer_name,
       peer_role: peer_role,
@@ -243,7 +166,6 @@ io.sockets.on('connect', (socket) => {
       peer_hand: peer_hand,
       peer_rec: peer_rec,
     }
-    log.debug('connected peers grp by roomId', peers)
 
     addPeerTo(channel)
 
@@ -251,7 +173,6 @@ io.sockets.on('connect', (socket) => {
     socket.channels[channel] = channel
   })
 
-  // Chatting allocation 
   socket.on('chatting', (config) =>{
 	const {channel, peer_id, msg} = config 
   for(let id in channels[channel]) {
@@ -262,24 +183,18 @@ io.sockets.on('connect', (socket) => {
   })
 
 
-  /**
-   * Add peers to channel aka room
-   * @param {*} channel
-   */
   function addPeerTo(channel) {
     let host_socket_obj = channels[channel]
     let host_socket_id = Object.keys(host_socket_obj)[0]
     let host_socket_instance = host_socket_obj[host_socket_id]
 
     if (host_socket_instance !== undefined) {
-      // host offer
       host_socket_instance.emit('addPeer', {
         peer_id: socket.id,
         peers: peers[channel],
         should_create_offer: true,
         iceServers: iceServers,
       })
-      // user offer
       socket.emit('addPeer', {
         peer_id: host_socket_id,
         peers: peers[channel],
@@ -289,13 +204,9 @@ io.sockets.on('connect', (socket) => {
     }
   }
 
-  /**
-   * Remove peers from channel aka room
-   * @param {*} channel
-   */
+
   async function removePeerFrom(channel) {
     if (!(channel in socket.channels)) {
-      log.debug('[' + socket.id + '] [Warning] not in ', channel)
       return
     }
 
@@ -305,33 +216,22 @@ io.sockets.on('connect', (socket) => {
 
     switch (Object.keys(peers[channel]).length) {
       case 0:
-        // last peer disconnected from the room without room status set, delete room data
         delete peers[channel]
         break
       case 1:
-        // last peer disconnected from the room having room status set, delete room data
         if ('Locked' in peers[channel]) delete peers[channel]
         break
     }
-    log.debug('connected peers grp by roomId', peers)
 
     for (let id in channels[channel]) {
       await channels[channel][id].emit('removePeer', { peer_id: socket.id })
       socket.emit('removePeer', { peer_id: id })
-      log.debug('[' + socket.id + '] emit removePeer [' + id + ']')
     }
   }
 
-  /**
-   * Relay ICE to peers
-   */
   socket.on('relayICE', (config) => {
     let peer_id = config.peer_id
     let ice_candidate = config.ice_candidate
-
-    log.debug('[' + socket.id + '] relay ICE-candidate to [' + peer_id + '] ', {
-        address: config.ice_candidate,
-    });
 
     sendToPeer(peer_id, sockets, 'iceCandidate', {
       peer_id: socket.id,
@@ -339,19 +239,9 @@ io.sockets.on('connect', (socket) => {
     })
   })
 
-  /**
-   * Relay SDP to peers
-   */
   socket.on('relaySDP', (config) => {
     let peer_id = config.peer_id
     let session_description = config.session_description
-
-    log.debug(
-      '[' + socket.id + '] relay SessionDescription to [' + peer_id + '] ',
-      {
-        type: session_description.type,
-      },
-    )
 
     sendToPeer(peer_id, sockets, 'sessionDescription', {
       peer_id: socket.id,
@@ -359,9 +249,6 @@ io.sockets.on('connect', (socket) => {
     })
   })
 
-  /**
-   * Refresh Room Status (Locked/Unlocked)
-   */
   socket.on('roomStatus', (config) => {
     let room_id = config.room_id
     let room_locked = config.room_locked
@@ -369,16 +256,6 @@ io.sockets.on('connect', (socket) => {
 
     peers[room_id]['Locked'] = room_locked
 
-    log.debug(
-      '[' +
-        socket.id +
-        '] emit roomStatus' +
-        ' to [room_id: ' +
-        room_id +
-        ' locked: ' +
-        room_locked +
-        ']',
-    )
 
     sendToRoom(room_id, socket.id, 'roomStatus', {
       peer_name: peer_name,
@@ -386,9 +263,7 @@ io.sockets.on('connect', (socket) => {
     })
   })
 
-  /**
-   * Relay NAME to peers
-   */
+
   socket.on('peerName', (config) => {
     let room_id = config.room_id
     let peer_name_old = config.peer_name_old
@@ -403,13 +278,6 @@ io.sockets.on('connect', (socket) => {
     }
 
     if (peer_id_to_update) {
-      log.debug(
-        '[' + socket.id + '] emit peerName to [room_id: ' + room_id + ']',
-        {
-          peer_id: peer_id_to_update,
-          peer_name: peer_name_new,
-        },
-      )
 
       sendToRoom(room_id, socket.id, 'peerName', {
         peer_id: peer_id_to_update,
@@ -418,95 +286,9 @@ io.sockets.on('connect', (socket) => {
     }
   })
 
-  /**
-   * Relay Audio Video Hand ... Status to peers
-   */
-  socket.on('peerStatus', (config) => {
-    let room_id = config.room_id
-    let peer_name = config.peer_name
-    let element = config.element
-    let status = config.status
 
-    for (let peer_id in peers[room_id]) {
-      if (peers[room_id][peer_id]['peer_name'] == peer_name) {
-        switch (element) {
-          case 'video':
-            peers[room_id][peer_id]['peer_video'] = status
-            break
-          case 'audio':
-            peers[room_id][peer_id]['peer_audio'] = status
-            break
-          case 'hand':
-            peers[room_id][peer_id]['peer_hand'] = status
-            break
-          case 'rec':
-            peers[room_id][peer_id]['peer_rec'] = status
-            break
-        }
-      }
-    }
 
-    log.debug(
-      '[' + socket.id + '] emit peerStatus to [room_id: ' + room_id + ']',
-      {
-        peer_id: socket.id,
-        element: element,
-        status: status,
-      },
-    )
 
-    sendToRoom(room_id, socket.id, 'peerStatus', {
-      peer_id: socket.id,
-      peer_name: peer_name,
-      element: element,
-      status: status,
-    })
-  })
-
-  /**
-   * Relay actions to peers or specific peer in the same room
-   */
-  socket.on('peerAction', (config) => {
-    let room_id = config.room_id
-    let peer_name = config.peer_name
-    let peer_action = config.peer_action
-    let peer_id = config.peer_id
-
-    if (peer_id) {
-      log.debug(
-        '[' +
-          socket.id +
-          '] emit peerAction to [' +
-          peer_id +
-          '] from room_id [' +
-          room_id +
-          ']',
-      )
-
-      sendToPeer(peer_id, sockets, 'peerAction', {
-        peer_name: peer_name,
-        peer_action: peer_action,
-      })
-    } else {
-      log.debug(
-        '[' + socket.id + '] emit peerAction to [room_id: ' + room_id + ']',
-        {
-          peer_id: socket.id,
-          peer_name: peer_name,
-          peer_action: peer_action,
-        },
-      )
-
-      sendToRoom(room_id, socket.id, 'peerAction', {
-        peer_name: peer_name,
-        peer_action: peer_action,
-      })
-    }
-  })
-
-  /**
-   * Relay Kick out peer from room
-   */
   socket.on('kickOut', (config) => {
     let room_id = config.room_id
     let peer_id = config.peer_id
@@ -527,9 +309,7 @@ io.sockets.on('connect', (socket) => {
     })
   })
 
-  /**
-   * Relay File info
-   */
+
   socket.on('fileInfo', (config) => {
     let room_id = config.room_id
     let peer_name = config.peer_name
@@ -563,9 +343,7 @@ io.sockets.on('connect', (socket) => {
     sendToRoom(room_id, socket.id, 'fileInfo', file)
   })
 
-  /**
-   * Abort file sharing
-   */
+
   socket.on('fileAbort', (config) => {
     let room_id = config.room_id
     let peer_name = config.peer_name
@@ -582,9 +360,6 @@ io.sockets.on('connect', (socket) => {
     sendToRoom(room_id, socket.id, 'fileAbort')
   })
 
-  /**
-   * Relay video player action
-   */
   socket.on('videoPlayer', (config) => {
     let room_id = config.room_id
     let peer_name = config.peer_name
@@ -627,22 +402,16 @@ io.sockets.on('connect', (socket) => {
     }
   })
 
-  /**
-   * Whiteboard actions for all user in the same room
-   */
+
   socket.on('wbCanvasToJson', (config) => {
     let room_id = config.room_id
-    // log.debug('Whiteboard send canvas', config);
     sendToRoom(room_id, socket.id, 'wbCanvasToJson', config)
   })
 
 
 
   socket.on('chat', (data, callback)=>{
-  console.log('server received from local client')
-  //const {user, msg} = data
   return callback(data)
-  //socket.emit('chat-response', {user: user, msg: msg})  
   })
 
   socket.on('whiteboardAction', (config) => {
@@ -650,31 +419,18 @@ io.sockets.on('connect', (socket) => {
     let room_id = config.room_id
     sendToRoom(room_id, socket.id, 'whiteboardAction', config)
   })
-}) // end [sockets.on-connect]
+}) 
 
-/**
- * Send async data to all peers in the same room except yourself
- * @param {*} room_id id of the room to send data
- * @param {*} socket_id socket id of peer that send data
- * @param {*} msg message to send to the peers in the same room
- * @param {*} config JSON data to send to the peers in the same room
- */
+
 async function sendToRoom(room_id, socket_id, msg, config = {}) {
   for (let peer_id in channels[room_id]) {
-    // not send data to myself
     if (peer_id != socket_id) {
       await channels[room_id][peer_id].emit(msg, config)
     }
   }
 }
 
-/**
- * Send async data to specified peer
- * @param {*} peer_id id of the peer to send data
- * @param {*} sockets all peers connections
- * @param {*} msg message to send to the peer in the same room
- * @param {*} config JSON data to send to the peer in the same room
- */
+
 async function sendToPeer(peer_id, sockets, msg, config = {}) {
   if (peer_id in sockets) {
     await sockets[peer_id].emit(msg, config)
