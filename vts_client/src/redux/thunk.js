@@ -1,3 +1,7 @@
+export const userAuthenticate = (userToken) => async(dispatch, getState) => {
+  dispatch({type: 'user_authenticated', payload: userToken})
+}
+
 export const dummyDataUpdate = () => async (dispatch, getState) => {
   dispatch({ type: 'dummy_dispatch', payload: 'dummy updated!' })
 }
@@ -34,3 +38,8 @@ export const audioConstraintUpdate = (option) => async(dispatch, getState) => {
 export const videoConstraintUpdate = (option) => async(dispatch, getState) => {
   dispatch({type: 'update_video_constraint', payload: option})
 }
+
+export const recStateUpdate = (option) =>  async(dispatch, getState)=>{
+  dispatch({type: 'update_record_state', payload: option})
+}
+

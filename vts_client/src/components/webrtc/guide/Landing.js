@@ -2,7 +2,7 @@ import React from 'react'
 import { GetFetchQuotes } from '../../../api/fetch'
 import { useNavigate } from 'react-router-dom'
 
-const Landing = () =>
+const Landing = (props) =>
   {
     let navigate = useNavigate()
 
@@ -33,6 +33,7 @@ const Landing = () =>
     return navigate(`/guide${id}/contents`)
   }
 
+    
     return (
       <div className='landing'>
         <div>Landing component</div>

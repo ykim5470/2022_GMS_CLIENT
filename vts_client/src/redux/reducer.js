@@ -1,4 +1,7 @@
 import { io } from 'socket.io-client'
+// import { combineReducers } from 'redux'
+// import { sessionReducer } from 'redux-react-session'
+
 
 const signalingServerPort = 4000
 // const signalingServer = 'https://106.255.237.50:4000'
@@ -21,6 +24,7 @@ const initialState = {
   roomContents: 0,
   testNum: 1,
   localMediaStream: null,
+  user: null,
   mediaConstraints: {
     useVideo: true, 
     useAudio: true, 
@@ -33,9 +37,12 @@ const initialState = {
   test: true
 }
 
+
 // reducers
 export const rootReducer = (state = initialState, action) => {
   switch (action.type) {
+    case 'user_authenticated':
+      return {...state, user: action.payload}
     case 'dummy_dispatch':
       console.log(action.payload)
       return { ...state, dummy: action.payload }
@@ -60,7 +67,15 @@ export const rootReducer = (state = initialState, action) => {
     case 'update_video_constraint':
       state.mediaConstraints.useVideo  = action.payload
       return {...state}
+
+    case 'update_record_state':
+        state.mediaConstraints.isRecScreenSream = action.payload
+        return {...state}
     default:
       return state
   }
 }
+
+
+// export const rootReducer = combineReducers({session: sessionReducer, app: appReducer})
+

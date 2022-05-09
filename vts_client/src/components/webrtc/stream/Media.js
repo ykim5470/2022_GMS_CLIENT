@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
 
-import { audioUpdate, videoUpdate, audioConstraintUpdate, videoConstraintUpdate, updateLocalMedia } from '../../../redux/thunk'
+import { audioUpdate, videoUpdate, audioConstraintUpdate, videoConstraintUpdate, updateLocalMedia, recStateUpdate } from '../../../redux/thunk'
 
 import {PostFetchQuotes} from '../../../api/fetch'
 import DetectRTC from 'detectrtc'
@@ -229,7 +229,6 @@ async function sendChatMessage(){
 
 
 const myBrowserName = DetectRTC.browser.name
-
 const videoConstraints = myBrowserName ==='Firefox' ? getVideoConstraints('default', mediaConstraintsState.videoMaxFrameRate, mediaConstraintsState.useVideo) : getVideoConstraints('useVideo', mediaConstraintsState.videoMaxFrameRate, mediaConstraintsState.useVideo)
   
 
@@ -331,7 +330,16 @@ const videoController =()=>{
   const currentVideoOption = !mediaConstraintsState.myVideoStatus
   dispatch(videoUpdate(currentVideoOption))
   state.localMediaStream.getVideoTracks()[0].enabled = currentVideoOption
+}
 
+/**
+ * Recording Media
+ */
+const recController = () =>{
+  console.log(mediaConstraintsState.isRecScreenSream)
+  const currentRecState = !mediaConstraintsState.isRecScreenSream
+  dispatch(recStateUpdate(currentRecState))
+  console.log(mediaConstraintsState.isRecScreenSream)
 }
 
 
@@ -386,7 +394,18 @@ const videoController =()=>{
         </ToggleButton>)
          }
         </ToggleButtonGroup>
-
+        {/* Media Record */}
+          <ToggleButtonGroup onClick={recController} aria-label='record toggle'>
+          {!mediaConstraintsState.isRecScreenSream ? (
+            <ToggleButton value={mediaConstraintsState.isRecScreenSream}>
+              Rec Start 
+            </ToggleButton>
+          ) : (
+            <ToggleButton value={mediaConstraintsState.isRecScreenSream}>
+            Rec Stop 
+          </ToggleButton>
+          )}
+          </ToggleButtonGroup>
     </div>
   )
 }

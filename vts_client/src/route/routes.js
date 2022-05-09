@@ -1,8 +1,14 @@
-import { Route } from 'react-router-dom'
+import { Route  } from 'react-router-dom'
 /**
  * WebRTC pages components
  * @interface Components
  */
+
+/**
+ * Auth
+ */
+ import Login from '../components/webrtc/auth/Login'
+ import Logout from '../components/webrtc/auth/Logout'
 
 /**
  * GUIDE
@@ -17,11 +23,22 @@ import Stream from '../components/webrtc/stream/Stream'
 import User from '../components/webrtc/user/User'
 import View from '../components/webrtc/user/View'
 
+
+
+
+
 const routes = [
   /**
    * WebRTC route components
    * @components
    */
+  {
+    path: '/login',
+    name: 'Login',
+    exact: true, 
+    component: Login, 
+    route: Route
+  },
   {
     path: '/guide:id/landing',
     name: 'Landing',
