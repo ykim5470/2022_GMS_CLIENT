@@ -1,19 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, {  useRef, useEffect } from 'react'
 
 function handleAudio(audioStatus) {
-  console.log('오디오 상태 변화')
   return (audioStatus.current = !audioStatus)
 }
 
 function handleVideo(videoStatus) {
-  console.log('비디오 상태 변화')
   return (videoStatus.current = !videoStatus)
 }
 
-/**
- * Get MediaRecorder MimeTypes
- * @returns mimeTypes
- */
 function getSupportedMimeTypes() {
   const possibleTypes = [
     'video/webm;codecs=vp9,opus',
@@ -27,10 +21,6 @@ function getSupportedMimeTypes() {
   })
 }
 
-/**
- * Start Recording
- * @returns
- */
 function startRecording(recordedBlobs, isMobileDevice) {
   let options = getSupportedMimeTypes()
 

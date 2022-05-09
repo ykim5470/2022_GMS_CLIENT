@@ -5,16 +5,12 @@ const GuideProfile = () =>
   {
     const navigate = useNavigate()
 
-    // Nav Link로 바꿀 것 
     const redirectGuideLandingPage = ()=>{
-      // Guide id would be linked to login system 
       const id  = '1'
       return navigate(`/guide${id}/landing`)
   
     }
-      // Nav Link로 바꿀 것 
     const redirectGuideContentsPage = () =>{
-      // Guide id would be linked to login system 
       const id  = '1'
       return navigate(`/guide${id}/contents`)
     }

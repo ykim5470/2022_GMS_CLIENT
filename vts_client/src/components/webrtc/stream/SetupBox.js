@@ -14,11 +14,7 @@ const peerLoockupUrl = 'https://extreme-ip-lookup.com/json/?key=demo2'
 let peerGeo = getPeerGeoLocation()
 
 
-/**
- *
- * @param {socket instance} props
- * @returns SetupBox component
- */
+
 const SetupBox = (props) => {
   const state = useSelector(state => state)
   const dispatch = useDispatch()
@@ -76,11 +72,6 @@ const SetupBox = (props) => {
   }
 
 
-  /**
-   * Audio & Meida setup done correctly
-   * POST room setup data to Server ; aka. DB store
-   * & emit to Server ; aka. user list page sync
-   */
   const roomCreate = (event) => {
     let formData = new FormData()
     formData.append('thumbnail', thumbnail.current)
@@ -97,24 +88,21 @@ const SetupBox = (props) => {
     console.log(formData)
 
     PostFetchQuotes({
-      // uri: 'https://dbd6-211-171-1-210.ngrok.io/roomCreate',
-      // uri: `${process.env.REACT_APP_PUBLIC_IP}/roomCreate`,
       uri: `${process.env.REACT_APP_LOCAL_IP}/roomCreate`,
       body: formData,
       msg: 'Create Room',
     })
-    console.log('room create done')
-    console.log('emit join to channel event to server')
+
 
     state.signalingSocket.emit('join', {
       channel: roomId,
-      peer_name: peerInfo, // peerInfo
-      peer_role: 'host', // host or user
-      peer_geo: peerGeo, // peerGeo
-      peer_video: mediaConstraintsState.myVideoStatus, // myVidoeStatus
-      peer_audio: mediaConstraintsState.myAudioStatus, // myAudioStatus
-      peer_hand: mediaConstraintsState.myHandStatus, // myHandStatus
-      peer_rec: mediaConstraintsState.isRecScreenSream, // isRecScreenStream
+      peer_name: peerInfo, 
+      peer_role: 'host',
+      peer_geo: peerGeo, 
+      peer_video: mediaConstraintsState.myVideoStatus,
+      peer_audio: mediaConstraintsState.myAudioStatus, 
+      peer_hand: mediaConstraintsState.myHandStatus, 
+      peer_rec: mediaConstraintsState.isRecScreenSream,
 
   })
 
@@ -257,11 +245,6 @@ export default SetupBox
 
 
 
-/**
- * Get Peer info using DetectRTC 
- * https://github.com/muaz-khan/DetectRTC
- * @returns Obj peer info
- */
  function getPeerInfo(){
   return {
       detectRTCversion: DetectRTC.version,
@@ -275,10 +258,6 @@ export default SetupBox
 }
 
 
-/**
-* Get approximative peer geolocation
-* @returns json
-*/
 function getPeerGeoLocation() {
   fetch(peerLoockupUrl)
     .then((res) => res.json())
@@ -288,48 +267,44 @@ function getPeerGeoLocation() {
     .catch((err) => console.error(err))
 }
 
-/**
-* https://webrtc.github.io/samples/src/content/getusermedia/resolution/
-*/
+
 function getVideoConstraints(vidoeQuality, videoMaxFrameRate, useVideo){
   let frameRate = { max: videoMaxFrameRate }
   switch (vidoeQuality) {
     case 'useVideo':
       return useVideo
-    // Firefox not support set frameRate (OverconstrainedError) O.o
     case 'default':
       return { frameRate: frameRate }
-    // video cam constraints default
     case 'qvgaVideo':
       return {
         width: { exact: 320 },
         height: { exact: 240 },
         frameRate: frameRate,
-      } // video cam constraints low bandwidth
+      } 
     case 'vgaVideo':
       return {
         width: { exact: 640 },
         height: { exact: 480 },
         frameRate: frameRate,
-      } // video cam constraints medium bandwidth
+      } 
     case 'hdVideo':
       return {
         width: { exact: 1280 },
         height: { exact: 720 },
         frameRate: frameRate,
-      } // video cam constraints high bandwidth
+      }
     case 'fhdVideo':
       return {
         width: { exact: 1920 },
         height: { exact: 1080 },
         frameRate: frameRate,
-      } // video cam constraints very high bandwidth
+      } 
     case '4kVideo':
       return {
         width: { exact: 3840 },
         height: { exact: 2160 },
         frameRate: frameRate,
-      } // video cam constraints ultra high bandwidth
+      } 
   default: 
       return { frameRate: frameRate }
   }

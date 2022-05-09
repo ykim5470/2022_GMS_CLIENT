@@ -8,8 +8,7 @@ const Landing = (props) =>
 
     const createRoomNumber = () => {
       GetFetchQuotes({
-        // uri: 'https://106.255.237.50:4000/createRoomNumber',
-        // uri: `${process.env.REACT_APP_PUBLIC_IP}/createRoomNumber`,
+
         uri: `${process.env.REACT_APP_LOCAL_IP}/createRoomNumber`,
 
         msg: 'Get Random room ID',
@@ -19,16 +18,12 @@ const Landing = (props) =>
       })
     }
 
-    // Nav Link로 바꿀 것 
   const redirectGuideProfilePage = ()=>{
-    // Guide id would be linked to login system 
     const id  = '1'
     return navigate(`/guide${id}/profile`)
 
   }
-    // Nav Link로 바꿀 것 
   const redirectGuideContentsPage = () =>{
-    // Guide id would be linked to login system 
     const id  = '1'
     return navigate(`/guide${id}/contents`)
   }

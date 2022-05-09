@@ -1,11 +1,6 @@
 import { io } from 'socket.io-client'
-// import { combineReducers } from 'redux'
-// import { sessionReducer } from 'redux-react-session'
 
 
-const signalingServerPort = 4000
-// const signalingServer = 'https://106.255.237.50:4000'
-// const signalingServer = process.env.REACT_APP_PUBLIC_IP
 const signalingServer = process.env.REACT_APP_LOCAL_IP
 
 
@@ -17,7 +12,6 @@ let signalingSocket = io(signalingServer, {
   },
 })
 
-// init state
 const initialState = {
   dummy: 'dummy',
   signalingSocket: signalingSocket,
@@ -38,7 +32,6 @@ const initialState = {
 }
 
 
-// reducers
 export const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case 'user_authenticated':
@@ -75,7 +68,4 @@ export const rootReducer = (state = initialState, action) => {
       return state
   }
 }
-
-
-// export const rootReducer = combineReducers({session: sessionReducer, app: appReducer})
 

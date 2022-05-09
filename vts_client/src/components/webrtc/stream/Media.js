@@ -12,28 +12,18 @@ import { ToggleButtonGroup, ToggleButton } from '@mui/material'
 
 
 
-/**
- *
- * @param {socket instance} props
- * @returns Media component
- */
 const Media = (props) => {
   const state = useSelector(state => state)
   const dispatch = useDispatch()
-  // Audio & Media constraint
   const mediaConstraintsState = state.mediaConstraints
-  // WebRTC handling
   const signalingSocket = props.socket
   const peerConnections = useRef({})
   const peerConnection = useRef({})
   const description = useRef({})
-  // chat
   const nickName = useRef('')
   const msgerInput = useRef('')
   const [chatMessage,setChatMessage] = useState([])
-  // camera mode
   const cameraMode = useRef('user')
-  // room id
   const { id } = useParams()
   const roomId = id
   
@@ -44,44 +34,18 @@ const Media = (props) => {
 
   useEffect(() => {
 
-      videoRef.current.srcObject = state.localMediaStream
+    videoRef.current.srcObject = state.localMediaStream
       
-    //   var binaryData = []
-    //   // binaryData.push(localMedia)
-      
-
-    //   preload.current = window.URL.createObjectURL(new Blob(binaryData, {type: 'video/webm'}))
-    //   console.log(preload)
-    //   console.log(preload.current)
-
-    // handleAddPeer
     signalingSocket.on('addPeer', (config) => {
       console.log(config)
-      const { peer_id, peers, should_create_offer, iceServers } = config
-
-      if (peer_id in peerConnections) {
-        console.log('Already connected to peer', peer_id)
-      }
+      const { peer_id, should_create_offer, iceServers } = config
 
       peerConnection.current = new RTCPeerConnection({ iceServers: iceServers })
       peerConnections.current = {
         [peer_id]: peerConnection.current,
       }
 
-      console.log(peerConnections.current[peer_id])
 
-      // handlePeersConnectionStatus(peer_id)
-      peerConnections.current[peer_id].onconnectionstatechange = function (
-        event,
-      ) {
-        const connectionStatus = event.currentTarget.connectionState
-        console.log('Connection', {
-          peer_id: peer_id,
-          connectionStatus: connectionStatus,
-        })
-      }
-
-      // handleOnIceCandidate(peer_id)
       peerConnections.current[peer_id].onicecandidate = (event) => {
         if (!event.candidate) return
         signalingSocket.emit('relayICE', {
@@ -93,20 +57,15 @@ const Media = (props) => {
         })
       }
 
-      // handleAddTracks(peer_id)
       state.localMediaStream.getTracks().forEach((track) => {
         peerConnections.current[peer_id].addTrack(track, state.localMediaStream)
       })
 
-      // handlRtcOffer
       if (should_create_offer) {
-        console.log('true인 경우에는 무조건 불려야한다. 즉, caller는 true이다.')
         peerConnections.current[peer_id].onnegotiationneeded = () => {
-          console.log('Creating RTC offer to ', peer_id)
           peerConnections.current[peer_id]
             .createOffer()
             .then((local_description) => {
-              console.log('Local offer description is', local_description)
               peerConnections.current[peer_id]
                 .setLocalDescription(local_description)
                 .then(() => {
@@ -114,7 +73,6 @@ const Media = (props) => {
                     peer_id: peer_id,
                     session_description: local_description,
                   })
-                  console.log('Offer setLocalDescription done!')
                 })
                 .catch((err) => {
                   console.error('[Error] offer setLocalDescription', err)
@@ -130,9 +88,8 @@ const Media = (props) => {
 
 
     signalingSocket.on('receiveChat', (data) =>{
-      const {from, msg} = data 
-      console.log('This message is from :' + from)
-      console.log('The message is :'+msg)
+      const {msg} = data 
+
       setChatMessage(
         chatMessage => [...chatMessage, msg]
       )
@@ -150,11 +107,7 @@ const Media = (props) => {
 
     signalingSocket.on('sessionDescription', (config) => {
       const { peer_id, session_description } = config
-      console.log(peerConnections.current[peer_id].signalingState)
-      console.log(
-        '여기서 불리는 config는 가장 마지막으로 user local sdp answer를 check하는 용도',
-      )
-      console.log(config)
+
 
       description.current = new RTCSessionDescription(session_description)
 
@@ -170,7 +123,6 @@ const Media = (props) => {
 
 
     signalingSocket.on('removePeer', (config) =>{
-      console.log('Signaling server said to remove peer:' , config)
 
       const {peer_id} = config.peer_id
       if(peer_id in peerConnections.current) peerConnections.current[peer_id].close()
@@ -180,16 +132,11 @@ const Media = (props) => {
 
 
     signalingSocket.on('handleDisconnect', (reason)=>{
-      console.log('Disconnected from signaling server', {reason: reason})
       for(let peer_id in peerConnections.current){
         peerConnections.current[peer_id].close()
       }
       peerConnections.current = {}
 
-      // emit to server update live room activate status 
-
-
-      // redirect to guide's landing page 
       naviagte('/guide1/landing', {replace: true})
 
     })
@@ -198,14 +145,10 @@ const Media = (props) => {
 
 
 
-/**
- * Send Chat messages to peers in the room
- */
 async function sendChatMessage(){
   const msg = msgerInput
 
   await PostFetchQuotes({
-    // uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
     uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
     body: {
       RoomId: roomId, 
@@ -241,38 +184,25 @@ const constraints = {
     video: videoConstraints,
    }
 
-/**
- * Check if there is peer connections
- * @returns truee, false 
- */
+
   const thereisPeerConnections = () =>{
     if(Object.keys(peerConnections.current).length === 0) return false
       return true
   }
 
-/**
- * Stop local video track 
- * @returns Sender video track stop & update gloabl localMedia status  
- */
+
 const stopLocalVideoTrack  = () =>{
   return state.localMediaStream.getVideoTracks()[0].stop()
 }
 
-// Swap Camera 
 const swapCamera = () =>{
-  console.log(cameraMode.current)
-  // setup camera 
   cameraMode.current  = cameraMode.current === 'user' ? 'environment' : 'user'
    dispatch(videoConstraintUpdate({facingMode: {exact: cameraMode.current}})) // pass camera mode config to constraint 
 
-  // some devices can't swap the cam, if have Video Track already in execution 
   if(mediaConstraintsState.useVideo) stopLocalVideoTrack()
-
-  console.log(constraints)
 
   navigator.mediaDevices.getUserMedia(constraints)
   .then((camStream)=> {
-    console.log(camStream)
     refreshMyStreamToPeers(camStream)
     refreshMyLocalStream(camStream)
     if(mediaConstraintsState.useVideo) setMyVideoStatusTrue()
@@ -281,31 +211,18 @@ const swapCamera = () =>{
   })
 }
 
-/**
- * Refresh my stream changes to connected peers in the room 
- * @param {*} stream 
- * @param {*} localAudioTrackChange ture or false(default)
- */
  const refreshMyStreamToPeers = (stream, localAudioTrackChange=false) =>{
   if(!thereisPeerConnections()) return 
-  console.log(peerConnections.current)
 
-  // refresh my stream to peers 
   for(let peer_id  in peerConnections.current){
     let videoSender = peerConnections.current[peer_id].getSenders().find((s)=>(s.track? s.track.kind ==='video' : false))
     videoSender.replaceTrack(stream.getVideoTracks()[0])
   }
 }
 
-/**
- * Refresh my local stream 
- * @param {*} stream
- * @param {*} localAudiotrackChange true or false(default)
- */
+
 const refreshMyLocalStream = (stream, localAudioTrackChange=false) =>{
   stream.getVideoTracks()[0].enabled = true 
-  // update global as well 
-  console.log(stream) // renewed stream
   dispatch(updateLocalMedia(stream))
   return videoRef.current.srcObject = stream
 }
@@ -313,9 +230,6 @@ const refreshMyLocalStream = (stream, localAudioTrackChange=false) =>{
 const setMyVideoStatusTrue = () =>{}
 
 
-/**
- * Switch on-off audio
- */
 const audioController = () =>{  
   const currentAudioOption = !mediaConstraintsState.myAudioStatus
   dispatch(audioUpdate(currentAudioOption)) 
@@ -323,32 +237,22 @@ const audioController = () =>{
 
 }
 
-/**
- * Switch on-off video 
- */
 const videoController =()=>{
   const currentVideoOption = !mediaConstraintsState.myVideoStatus
   dispatch(videoUpdate(currentVideoOption))
   state.localMediaStream.getVideoTracks()[0].enabled = currentVideoOption
 }
 
-/**
- * Recording Media
- */
+
 const recController = () =>{
-  console.log(mediaConstraintsState.isRecScreenSream)
   const currentRecState = !mediaConstraintsState.isRecScreenSream
   dispatch(recStateUpdate(currentRecState))
-  console.log(mediaConstraintsState.isRecScreenSream)
 }
 
 
   return (
     <div className='media'>
-      {/* Video */}
       <video ref={videoRef} autoPlay playsInline muted />
-
-      {/* Chatting */}
       <div className='wrapper'>
         <div className='display-container'>
           <ul className='chatting-list'>
@@ -365,13 +269,11 @@ const recController = () =>{
             <button className='send-button' onClick={sendChatMessage}>전송</button>
           </span>
       </div>
-      {/* Swap Camera */}
       <div className='swap-camera'> 
         <button className='swapCameraBtn' onClick={swapCamera}>
           카메라 전환
         </button>
       </div>
-      {/* MediaController */}
       <ToggleButtonGroup onClick={videoController} aria-label='video toggle'>
           {mediaConstraintsState.myVideoStatus ?           
           (<ToggleButton value={mediaConstraintsState.myVideoStatus} aria-label='video off'>
@@ -394,7 +296,6 @@ const recController = () =>{
         </ToggleButton>)
          }
         </ToggleButtonGroup>
-        {/* Media Record */}
           <ToggleButtonGroup onClick={recController} aria-label='record toggle'>
           {!mediaConstraintsState.isRecScreenSream ? (
             <ToggleButton value={mediaConstraintsState.isRecScreenSream}>

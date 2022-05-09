@@ -3,9 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import DetectRTC from 'detectrtc'
 import {PostFetchQuotes} from '../../../api/fetch'
-import axios from 'axios'
-import { dblClick } from '@testing-library/user-event/dist/click'
-import { modalClasses } from '@mui/material'
 
 
 const peerLoockupUrl = 'https://extreme-ip-lookup.com/json/?key=demo2'
@@ -16,19 +13,10 @@ let myVideoStatus = false
 let myAudioStatus = false
 let isRecScreenSream = false
 
-// let peerConnection
-// let peerConnections = {}
-// let remoteMediaStream
 
 const View = () => {
   const navigate = useNavigate()
   const state = useSelector((state) => state)
-  // const [myPeerId, setMyPeerId] = useState('')
-  const myPeerId = useRef({})
-  // const [stateRemoteStream, setStateRemoteStream] = useState({})
-  // const [peerConnection, setPeerConnection] = useState('')
-  // const [peerConnections, setPeerConnections] = useState({})
-  const description = useRef({})
   const peerConnection = useRef({})
   const peerConnections = useRef({})
   const videoRef = useRef({})
@@ -39,7 +27,6 @@ const View = () => {
 
   const { id } = useParams()
   const roomId = id
-  console.log(roomId)
 
   useEffect(() => {
     getPeerGeoLocation()
@@ -55,35 +42,16 @@ const View = () => {
       peer_rec: isRecScreenSream,
     })
 
-    /**
-     * handleAddPeer
-     */
+
     state.signalingSocket.on('addPeer', (config) => {
-      const { peer_id, peers, should_create_offer, iceServers } = config
-      console.log(config)
-      console.log('This one should be the first one id')
-      if (peer_id in peerConnections) {
-        console.log('Already connected to peer', peer_id)
-        return
-      }
+      const { peer_id, iceServers } = config
+
       peerConnection.current = new RTCPeerConnection({ iceServers: iceServers })
 
       peerConnections.current = {
         [peer_id]: peerConnection.current,
       }
 
-      // handlePeersConnectionStatus(peer_id)
-      peerConnections.current[peer_id].onconnectionstatechange = function (
-        event,
-      ) {
-        const connectionStatus = event.currentTarget.connectionState
-        console.log('Connection', {
-          peer_id: peer_id,
-          connectionStatus: connectionStatus,
-        })
-      }
-
-      // handlOnIceCandidate(peer_id)
       peerConnections.current[peer_id].onicecandidate = (event) => {
         if (!event.candidate) return
         state.signalingSocket.emit('relayICE', {
@@ -94,31 +62,20 @@ const View = () => {
           },
         })
       }
-      // handleOnTrack(peer_id, peers)
-      console.log('=============receive test')
+
       peerConnections.current[peer_id].ontrack = (event) => {
-        console.log('handleOnTrack', event)
-        console.log(event.streams[0])
-        // setStateRemoteStream(event.streams[0])
-        // useEffect(() => {
-        //   videoRef.current.srcObject = event.streams[0]
-        // })
+
         videoRef.current.srcObject = event.streams[0]
       }
     })
 
-    // socket chat Receive 
     state.signalingSocket.on('receiveChat', (data)=>{
-      const {from, msg} = data
-      console.log("This message is from :" +from)
-      console.log('The message is :' + msg)
-      console.log(chatMessage)
+      const { msg} = data
       setChatMessage(
         chatMessage => [...chatMessage, msg]
       )
     })
 
-    // handleAddPeer
     state.signalingSocket.on('iceCandidate', (config) => {
       const { peer_id, ice_candidate } = config
       peerConnections.current[peer_id]
@@ -130,25 +87,15 @@ const View = () => {
 
     state.signalingSocket.on('sessionDescription', (config) => {
       const { peer_id, session_description } = config
-      console.log(session_description)
-      console.log(session_description.type)
-      console.log(peerConnections.current[peer_id].signalingState)
-
       let description = new RTCSessionDescription(session_description)
 
-      console.log('여긴 와야지')
       peerConnections.current[peer_id]
         .setRemoteDescription(description)
         .then(() => {
-          console.log('setRemoteDescription done!')
           if (session_description.type == 'offer') {
-            console.log('Creating answer')
             peerConnections.current[peer_id]
               .createAnswer()
               .then((local_description) => {
-                console.log('Answer description is: ', local_description)
-                console.log(peerConnections.current[peer_id])
-
                 peerConnections.current[peer_id]
                   .setLocalDescription(local_description)
                   .then(() => {
@@ -160,7 +107,6 @@ const View = () => {
                       console.log('Answer setLocalDescription done!')
                       return
                     }
-                    // console.log(result) // check local answer sdp is called in wrong state : stable
                   })
                   .catch((err) => {
                     console.error('[Error] answer setLocalDescription', err)
@@ -177,31 +123,24 @@ const View = () => {
     })
 
 
-    // handleRemovePeer
     state.signalingSocket.on('removePeer', (config) =>{
-      console.log('Signaling server said to remove peer:' , config)
-
       const {peer_id} = config.peer_id
       if(peer_id in peerConnections.current) peerConnections.current[peer_id].close()
       
       delete peerConnections.current[peer_id]
 
-      // alert and redirect handling required!      
       navigate('/user', {replace: true}) 
     })
   }, [])
 
 
 
-/**
- * Send Chat messages to peers in the room
- */
+
 async function sendChatMessage(){
   const msg = msgerInput
 
 
   await PostFetchQuotes({
-    // uri: `${process.env.REACT_APP_PUBLIC_IP}/createChatLog`,
     uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
     body: {
       RoomId: roomId, 
@@ -219,22 +158,18 @@ async function sendChatMessage(){
       msg: msgerInput.current}
   ))
 
-  console.log(chatMessage)
   setChatMessage(
     chatMessage => [...chatMessage, msg.current]
   )
 }
 
 
-console.log(chatMessage)
 
 
   return (
     <div className='user'>
       view page
-      {/* Video */}
       <video ref={videoRef} autoPlay playsInline muted />
-      {/* Chatting */}
       <div className='wrapper'>
         <div className='display-container'>
           <ul className='chatting-list'>
@@ -258,11 +193,7 @@ console.log(chatMessage)
 
 export default View
 
-/**
- * Get peer info using DetecRTC
- * https://github.com/muaz-khan/DetectRTC
- * @returns Obj peer info
- */
+
 function getPeerInfo() {
   return {
     detectRTCversion: DetectRTC.version,
@@ -275,10 +206,6 @@ function getPeerInfo() {
   }
 }
 
-/**
- * Get approximative peer geolocation
- * @returns json
- */
 function getPeerGeoLocation() {
   fetch(peerLoockupUrl)
     .then((res) => res.json())

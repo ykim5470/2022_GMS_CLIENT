@@ -9,8 +9,6 @@ const GuideContents = () =>
   {
   const [contents, setContents] = useState([])
   const [roomId, setRoomId] = useState('')
-  // const [thumbnail, setThumbnail] = useState(null)
-  // const [media, setMedia] = useState(null)
   const resources = useRef({})
   const [roomTitle, setRoomTitle] = useState('')
   const [roomHost, setRoomHost] = useState('')
@@ -18,7 +16,6 @@ const GuideContents = () =>
 
     useEffect(()=>{
       GetFetchQuotes({
-        // uri: `${process.env.REACT_APP_PUBLIC_IP}/guideRoomList`,
         uri: `${process.env.REACT_APP_LOCAL_IP}/guideRoomList`,
         msg: 'GET current Room Contents information',
       }).then((result) => {
@@ -28,46 +25,26 @@ const GuideContents = () =>
 
     const navigate = useNavigate()
 
-    // Nav Link로 바꿀 것 
     const redirectGuideLandingPage = ()=>{
-      // Guide id would be linked to login system 
       const id  = '1'
       return navigate(`/guide${id}/landing`)
   
     }
-      // Nav Link로 바꿀 것 
     const redirectGuideProfilePage = () =>{
-      // Guide id would be linked to login system 
       const id  = '1'
       return navigate(`/guide${id}/profile`)
     }
 
 
-    // const onThumbnailFileChange = (e) => {
-    //   setThumbnail(e.target.files[0])
-    // }
-
-
-
-    // const onMediaFileChange = (e) => {
-    //   setMedia(e.target.files[0])
-
-    // }
-
-
     const onUploadChange = (e) =>{
-      // console.log(e.target.files)
       let fileLists = e.target.files
       resources.current = fileLists
-      // console.log(resources.current)
       console.log(resources)
       console.log(resources.current[0])
       console.log(resources.current[1])
       
       e.preventDefault()
-      
-      // setResources(e.target.files[0])
-    }
+  }
 
     // 
     const uploadRecordMedia = (event) =>{
@@ -85,8 +62,6 @@ const GuideContents = () =>
       console.log(formData)
 
       PostFetchQuotes({
-        // uri: 'https://106.255.237.50:4000/recordMediaUpload',
-        // uri: `${process.env.REACT_APP_PUBLIC_IP}/recordMediaUpload`,
         uri: `${process.env.REACT_APP_LOCAL_IP}/recordMediaUpload`,
 
         body: formData,
@@ -110,8 +85,6 @@ const GuideContents = () =>
         Live
         <br/>
         { contents.map((el,idx) => {
-          // let thumnail = `https://106.255.237.50:4000/uploads/${el.setConfig[0].Thumbnail}`
-          // let thumnail = `${process.env.REACT_APP_PUBLIC_IP}/uploads/${el.setConfig[0].Thumbnail}`
           let thumnail = `${process.env.REACT_APP_LOCAL_IP}/uploads/${el.setConfig[0].Thumbnail}`
         
 
@@ -148,11 +121,7 @@ const GuideContents = () =>
             <input type='file' name='resources' required multiple onChange={onUploadChange} />
           </label>
           <br />
-          {/* <label>
-            Dummy rec file:{' '}
-            <input type='file' name='media' required multiple onChange={onMediaFileChange} />
-          </label>
-          <br /> */}
+
           <label>
             Dummy rec title:{' '}
             <input
