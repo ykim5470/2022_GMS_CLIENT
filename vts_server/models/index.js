@@ -17,15 +17,16 @@ const StoreBrand = require('./commerce/store_brand')
 const StoreProductDetail = require('./commerce/store_product_detail')
 const StoreProductCategory = require('./commerce/store_product_category')
 
+const User = require('./users/user')
 
 
 
 const db = {}
 const sequelize = new Sequelize(
-  config.database,
-  config.username,
+  config.database, 
+  config.username, 
   config.password,
-  config,
+  config  
 )
 
 fs.readdirSync(__dirname).forEach((model) => {
@@ -57,6 +58,8 @@ db.StoreBrand = StoreBrand
 db.StoreProductDetail = StoreProductDetail
 db.StoreProductCategory = StoreProductCategory
 
+db.User = User
+
 
 
 Channel.init(sequelize)
@@ -71,6 +74,8 @@ StoreBrand.init(sequelize)
 StoreProductDetail.init(sequelize)
 StoreProductCategory.init(sequelize)
 
+
+User.init(sequelize)
 
 
 Channel.hasMany(ChannelSetConfig, {

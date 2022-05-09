@@ -5,9 +5,6 @@ const fileSizeFormatter = (bytes, decimal) =>{
     const sizes = ['Bytes', 'KB' , 'MB','GB' ,'TB','PB']
     const index = Math.floor(Math.log(bytes) / Math.log(1000))
     return parseFloat((bytes/Math.pow(1000, index)).toFixed(dm)) + '-' +sizes[index]
-    
-    
-
 }
 
 module.exports = fileSizeFormatter
