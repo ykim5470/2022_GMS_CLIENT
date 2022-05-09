@@ -19,9 +19,14 @@ const app = express()
 const Logger = require('./helpers/Logger')
 const log = new Logger('server')
 
+<<<<<<< HEAD
 const port = process.env.PORT || 4000 // must be the same to client.js signalingServerPort
 const isHttps = true
 const SequelizeStore = require('connect-session-sequelize')(session.Store)
+=======
+const port = process.env.PORT || 5000 // must be the same to client.js signalingServerPort
+const isHttps = false
+>>>>>>> 3f7324467fe6605bb158c311a7baa74bda4c80bb
 
 let io, server, host
 
@@ -57,7 +62,7 @@ io = new Server({
   maxHttpBufferSize: 1e7,
   pingTimeout: 60000,
   cors: {
-    origin: 'https://106.255.237.50:5000',
+    origin: 'https://106.255.237.50:8080',
     methods: ['GET', 'POST'],
     allowedHeaders: ['my-custom-header'],
     credentials: true,
