@@ -16,8 +16,8 @@ const app = express()
 const Logger = require('./helpers/Logger')
 const log = new Logger('server')
 
-const port = process.env.PORT || 4000 // must be the same to client.js signalingServerPort
-const isHttps = true
+const port = process.env.PORT || 5000 // must be the same to client.js signalingServerPort
+const isHttps = false
 
 let io, server, host
 
@@ -53,7 +53,7 @@ io = new Server({
   maxHttpBufferSize: 1e7,
   pingTimeout: 60000,
   cors: {
-    origin: 'https://106.255.237.50:5000',
+    origin: 'https://106.255.237.50:8080',
     methods: ['GET', 'POST'],
     allowedHeaders: ['my-custom-header'],
     credentials: true,
