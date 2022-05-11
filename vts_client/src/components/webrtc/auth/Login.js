@@ -12,6 +12,11 @@ const Login = () =>{
     const navigate = useNavigate()
 
 
+	const redirect = () => {
+	window.location.replace('https://enjoystreet.kr/store/testtest/111')	
+	return
+}
+
     const loginRequest = (event) =>{
     try{
         PostFetchQuotes({
@@ -58,6 +63,8 @@ return(
             <br/>
          <input type='submit' value='로그인' />
         </form>
+
+	<button onClick={redirect}>redirect</button>
     </article>
     )
 }
