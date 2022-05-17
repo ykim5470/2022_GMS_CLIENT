@@ -26,7 +26,10 @@ const Stream = () => {
   const state = useSelector((state) => state)
   const navigate = useNavigate()
 
+
   const roomState = useRoomState()
+
+
   
 
   if(!roomState){

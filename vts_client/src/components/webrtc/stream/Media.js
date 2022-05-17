@@ -34,10 +34,13 @@ const Media = (props) => {
 
   useEffect(() => {
 
+    console.log('접속한 호스트 클라이언트 소켓 아이디')
+    console.log(state.signalingSocket.id)
+    console.log(state.signalingSocket)
+  
     videoRef.current.srcObject = state.localMediaStream
       
     signalingSocket.on('addPeer', (config) => {
-      console.log(config)
       const { peer_id, should_create_offer, iceServers } = config
 
       peerConnection.current = new RTCPeerConnection({ iceServers: iceServers })
@@ -123,23 +126,18 @@ const Media = (props) => {
 
 
     signalingSocket.on('removePeer', (config) =>{
-
-      const {peer_id} = config.peer_id
+      const {peer_id} = config
+      console.log(peer_id) 
+      console.log(config) //  peer_id : a0-H5R7VfEvxxx
       if(peer_id in peerConnections.current) peerConnections.current[peer_id].close()
       
       delete peerConnections.current[peer_id]
+
+      console.log(peer_id + ': 해당 유저가 접속을 종료했습니다.')
+      console.log('현재 방에 접속한 유저는 다음과 같습니다.' )
+      console.log(peerConnections.current)
     })
 
-
-    signalingSocket.on('handleDisconnect', (reason)=>{
-      for(let peer_id in peerConnections.current){
-        peerConnections.current[peer_id].close()
-      }
-      peerConnections.current = {}
-
-      naviagte('/guide1/landing', {replace: true})
-
-    })
   }, [])
 
 

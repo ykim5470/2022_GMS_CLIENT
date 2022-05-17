@@ -12,7 +12,8 @@ export const GetFetchQuotes = async (apiConfig) => {
       }
     })
   } catch (err) {
-    console.log(err)
+    console.log(err.response)
+    return err.respoonse
   }
 }
 
@@ -28,6 +29,7 @@ export const PostFetchQuotes = async (apiConfig) => {
       }
     })
   } catch (err) {
-    console.log(err)
+    console.log(err.response)
+    return err.response
   }
 }

@@ -1,14 +1,9 @@
-import React, {  useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import React from 'react'
 
 import Content from './Content'
 
 const User = () => {
-
-  const [myPeerId, setMyPeerId] = useState('')
-  const [socketId , setSocketId] = useState('')
-
-  return <div className='userList'>{<Content socket={socketId}/>}</div>
+  return <div className='userList'>{<Content />}</div>
 }
 
 export default User

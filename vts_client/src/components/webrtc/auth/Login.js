@@ -28,11 +28,11 @@ const Login = () =>{
             msg: 'guide login request'
         }).then((response) => {
             if(response === undefined){
-                alert('Login Failed')
+                alert('Login Failed')``
             }else{
                 const userToken = response
                 dispatch(userAuthenticate(userToken))
-                const {id} = userToken.token
+                const {id} = response.token
                 return navigate(`/guide${id}/landing`)
             }
         })

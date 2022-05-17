@@ -4,7 +4,7 @@ import { GetFetchQuotes } from '../../../api/fetch'
 import { useSelector } from 'react-redux'
 
 
-const Content = (props) => {
+const Content = () => {
   const navigate = useNavigate()
 
 

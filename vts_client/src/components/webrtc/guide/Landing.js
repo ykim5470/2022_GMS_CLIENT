@@ -7,12 +7,10 @@ const Landing = (props) =>
     let navigate = useNavigate()
 
     const createRoomNumber = () => {
-      GetFetchQuotes({
-
-        uri: `${process.env.REACT_APP_LOCAL_IP}/createRoomNumber`,
-
-        msg: 'Get Random room ID',
-      }).then((result) => {
+        GetFetchQuotes({
+          uri: `${process.env.REACT_APP_LOCAL_IP}/createRoomNumber`,
+          msg: 'Get Random room ID',
+        }).then((result) => {
         console.log(result)
         return navigate(`/stream/${result.roomId}`, { replace: true })
       })
