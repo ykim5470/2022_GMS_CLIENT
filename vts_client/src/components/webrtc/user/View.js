@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
-import {PostFetchQuotes, GetFetchQuotes} from '../../../api/fetch'
+import {PostFetchQuotes, GetFetchQuotes, PutFetchQuotes} from '../../../api/fetch'
 import DetectRTC from 'detectrtc'
 
 import {Button} from '@mui/material'
@@ -88,10 +88,6 @@ const View = () => {
       peer_rec: isRecScreenSream,
     })
 
-    console.log('접속한 피어 클라이언트 소켓 아이디')
-    console.log(state.signalingSocket)
-    console.log(state.signalingSocket.id)
-
 
     state.signalingSocket.on('addPeer', (config) => {
       const { peer_id, iceServers } = config
@@ -99,6 +95,17 @@ const View = () => {
       console.log(state.signalingSocket)
       console.log(state.signalingSocket.id)
       console.log('재접속 하나요?')
+
+      // 동시 접속자 + 
+      PostFetchQuotes({
+        uri: `${process.env.REACT_APP_LOCAL_IP}/addPeer`,
+        body: {
+          RoomId: roomId, 
+          User: state.signalingSocket.id,
+          Status: 'connected', 
+        }, 
+        msg: 'Add user to current user list'
+        })
 
       peerConnection.current = new RTCPeerConnection({ iceServers: iceServers })
 
@@ -129,6 +136,15 @@ const View = () => {
         chatMessage => [...chatMessage, msg]
       )
     })
+
+    state.signalingSocket.on('addedLikeCount', data => {
+      const {addedLikeCount, from} = data 
+      console.log(`${from} clicked like button`)
+        setRoomLikeCountTotal(addedLikeCount)
+      }
+    )
+
+
 
     state.signalingSocket.on('iceCandidate', (config) => {
       const { peer_id, ice_candidate } = config
@@ -177,30 +193,40 @@ const View = () => {
     })
 
 
-    state.signalingSocket.on('removePeer', (config) =>{
-      const {peer_id} = config
-      console.log('-------1')
-      console.log(peer_id)
-      console.log('-------2')
+    state.signalingSocket.on('removePeer', async(config) =>{
+      const {peer_id, peer_role} = config
 
-      console.log(config)
-      console.log('-------3')
+
 
       console.log(peerConnections.current)
-      // 
+      
       if(peer_id in peerConnections.current) peerConnections.current[peer_id].close()
       
       delete peerConnections.current[peer_id]
 
+      await PutFetchQuotes({
+        uri: `${process.env.REACT_APP_LOCAL_IP}/addPeer`,
+        body: {
+          User: state.signalingSocket.id, 
+          Status: 'disconnected'
+        },
+        msg: 'Update User connection status'
+      })
+      
+
       console.log(peerConnections.current)
-      navigate('/user', {replace: true}) 
+      
+      if(peer_role === 'host'){
+        alert('호스트가 접속을 종료했습니다. 목록 페이지로 이동합니다.')
+        return navigate('/user', {replace: true}) 
+      }
+      console.log(`${peer_id} 님이 방을 나가셨습니다.`)
     })
   }, [])
 
 
 
   const addFavorite = async()  => {
-  
     await PostFetchQuotes({
       uri: `${process.env.REACT_APP_LOCAL_IP}/addLike`,
       body: {
@@ -212,27 +238,24 @@ const View = () => {
     })
   
     state.signalingSocket.emit('likeAdd', {
-      roomId: roomId, 
+      channel: roomId, 
+      peer_id: state.signalingSocket.id, 
       currentLikeCount : roomLikeCountTotal
     })
-    state.signalingSocket.on('addedLikeCount', data => {
-      console.log(data)
-      setRoomLikeCountTotal(data)
-    }
-    )
+
    }
 
-useEffect(()=>{
-      // Room Info GET aka. title, like, 
-      GetFetchQuotes({
-        uri: `${process.env.REACT_APP_LOCAL_IP}/roomInfo/${roomId}`,
-        msg: 'Get the room information '
-      }).then(response=>{
-        console.log(response)
-        setRoomLikeCountTotal(response.likeCountTotal)
-        setRoomTitle(response.title)
-      })
-}, [roomLikeCountTotal])
+// useEffect(()=>{
+//       // Room Info GET aka. title, like, 
+//       GetFetchQuotes({
+//         uri: `${process.env.REACT_APP_LOCAL_IP}/roomInfo/${roomId}`,
+//         msg: 'Get the room information '
+//       }).then(response=>{
+//         console.log(response)
+//         setRoomLikeCountTotal(response.likeCountTotal)
+//         setRoomTitle(response.title)
+//       })
+// }, [roomLikeCountTotal])
 
 
 

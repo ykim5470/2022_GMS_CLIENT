@@ -126,7 +126,7 @@ const Media = (props) => {
 
 
     signalingSocket.on('removePeer', (config) =>{
-      const {peer_id} = config
+      const {peer_id, peer_role} = config
       console.log(peer_id) 
       console.log(config) //  peer_id : a0-H5R7VfEvxxx
       if(peer_id in peerConnections.current) peerConnections.current[peer_id].close()
