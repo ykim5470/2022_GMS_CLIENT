@@ -1,0 +1,18 @@
+.myVideo {
+  height: 200px;
+  width: 100%;
+}
+
+.chatting_list {
+  height: 300px;
+  border: 1px solid black;
+  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.my_message {
+  display: flex;
+  flex-direction: column;
+  text-align: end;
+}

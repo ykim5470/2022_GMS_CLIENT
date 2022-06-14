@@ -1,0 +1,42 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.container {
+  /* padding: 0 20px;
+  height: 5vh;
+  border: 1px solid black;
+  display: flex;
+  justify-content: space-between;
+  align-items: center; */
+}
+
+.nav_container {
+  padding: 0 20px;
+  height: 5vh;
+  border: 1px solid black;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* .side_container {
+  margin: 0;
+  width: 200px;
+  height: 95vh;
+  border: 1px solid black;
+} */
+
+.login_btn {
+  height: 20px;
+}

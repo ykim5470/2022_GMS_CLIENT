@@ -1,11 +1,12 @@
 import axios from 'axios'
 
 export const GetFetchQuotes = async (apiConfig) => {
+  console.log('apiConfig', apiConfig)
   try {
     return await axios.get(apiConfig.uri).then((resolve) => {
       if (resolve.status === 200) {
         console.log(`${resolve.status}: ${apiConfig.msg} request success`)
-        return resolve.data
+        return resolve
       } else {
         console.log(`${resolve.status}: ${apiConfig.msg} request failed`)
         return
@@ -13,7 +14,7 @@ export const GetFetchQuotes = async (apiConfig) => {
     })
   } catch (err) {
     console.log(err.response)
-    return err.respoonse
+    return err.response
   }
 }
 

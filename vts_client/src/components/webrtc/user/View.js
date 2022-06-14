@@ -2,13 +2,14 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
-import {PostFetchQuotes, GetFetchQuotes, PutFetchQuotes} from '../../../api/fetch'
+import { PostFetchQuotes, GetFetchQuotes, PutFetchQuotes } from '../../../api/fetch'
 import DetectRTC from 'detectrtc'
 
-import {Button} from '@mui/material'
+import { Button } from '@mui/material'
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 
+import style from './View.module.css'
 
 
 const peerLoockupUrl = 'https://extreme-ip-lookup.com/json/?key=demo2'
@@ -28,14 +29,18 @@ const View = () => {
   const videoRef = useRef({})
   const nickName = useRef('')
   const msgerInput = useRef('')
-  const [chatMessage,setChatMessage] = useState([])
+  const [chatMessage, setChatMessage] = useState([])
+  const [chatNick, setChatNick] = useState([])
+
   const [hostNickName, setHostNickName] = useState('')
   const [hostProfile, setHostProfile] = useState('')
   const [roomTitle, setRoomTitle] = useState('')
-  const [roomLikeCountTotal , setRoomLikeCountTotal] = useState(0)
+  const [roomLikeCountTotal, setRoomLikeCountTotal] = useState(0)
   const [itemTotal, setItemTotal] = useState(0)
-  
+  const [muteState, setMuteState] = useState(true)
 
+  const scrollRef = useRef();
+  console.log('scrollRef', scrollRef)
 
   const { id } = useParams()
   const roomId = id
@@ -45,20 +50,20 @@ const View = () => {
     GetFetchQuotes({
       uri: `${process.env.REACT_APP_LOCAL_IP}/hostInfo/${roomId}`,
       msg: 'Get the host information '
-    }).then(response=>{
-      console.log(response) 
-      setHostNickName(response.nickName)
+    }).then(response => {
+      console.log(response)
+      setHostNickName(response.data.nickName)
       // profile should be response.profileImage
-      setHostProfile(`${process.env.REACT_APP_LOCAL_IP}/uploads/thumbnail_1652398617785.png`)
+      setHostProfile(`${process.env.REACT_APP_LOCAL_IP}/uploads/live/thumbnailSource/thumbnail_1652398617785.png`)
     })
 
     // Room Info GET aka. title, like, 
     GetFetchQuotes({
       uri: `${process.env.REACT_APP_LOCAL_IP}/roomInfo/${roomId}`,
       msg: 'Get the room information '
-    }).then(response=>{
+    }).then(response => {
       console.log(response)
-      setRoomLikeCountTotal(response.likeCountTotal)
+      setRoomLikeCountTotal(response.data.likeCountTotal)
       setRoomTitle(response.title)
     })
 
@@ -66,14 +71,14 @@ const View = () => {
     GetFetchQuotes({
       uri: `${process.env.REACT_APP_LOCAL_IP}/brandInfo/${roomId}`,
       msg: 'Get the bsrand information '
-    }).then(response=>{
+    }).then(response => {
       let itemTotal = 0
-      for(let brand in response){
-        itemTotal += response[brand].length
+      for (let brand in response.data) {
+        itemTotal += response.data[brand].length
       }
       setItemTotal(itemTotal)
     })
-    
+
 
     getPeerGeoLocation()
     state.signalingSocket.emit('join', {
@@ -100,12 +105,12 @@ const View = () => {
       PostFetchQuotes({
         uri: `${process.env.REACT_APP_LOCAL_IP}/addPeer`,
         body: {
-          RoomId: roomId, 
+          RoomId: roomId,
           User: state.signalingSocket.id,
-          Status: 'connected', 
-        }, 
+          Status: 'connected',
+        },
         msg: 'Add user to current user list'
-        })
+      })
 
       peerConnection.current = new RTCPeerConnection({ iceServers: iceServers })
 
@@ -130,18 +135,27 @@ const View = () => {
       }
     })
 
-    state.signalingSocket.on('receiveChat', (data)=>{
-      const { msg} = data
+    console.log('chatMessage', chatMessage)
+
+    state.signalingSocket.on('receiveChat', (data) => {
+      const { msg, nick } = data
+      console.log('nick', nick)
       setChatMessage(
-        chatMessage => [...chatMessage, msg]
+        chatMessage => [...chatMessage, { msg, nick }]
       )
+      // setChatNick(
+      //   chatNick => [...chatNick, nick]
+      // )
+      // setChatMessage(
+      //   chatMessage => [...chatMessage, `${nick}: ${msg}`]
+      // )
     })
 
     state.signalingSocket.on('addedLikeCount', data => {
-      const {addedLikeCount, from} = data 
+      const { addedLikeCount, from } = data
       console.log(`${from} clicked like button`)
-        setRoomLikeCountTotal(addedLikeCount)
-      }
+      setRoomLikeCountTotal(addedLikeCount)
+    }
     )
 
 
@@ -193,32 +207,32 @@ const View = () => {
     })
 
 
-    state.signalingSocket.on('removePeer', async(config) =>{
-      const {peer_id, peer_role} = config
+    state.signalingSocket.on('removePeer', async (config) => {
+      const { peer_id, peer_role } = config
 
 
 
       console.log(peerConnections.current)
-      
-      if(peer_id in peerConnections.current) peerConnections.current[peer_id].close()
-      
+
+      if (peer_id in peerConnections.current) peerConnections.current[peer_id].close()
+
       delete peerConnections.current[peer_id]
 
       await PutFetchQuotes({
         uri: `${process.env.REACT_APP_LOCAL_IP}/addPeer`,
         body: {
-          User: state.signalingSocket.id, 
+          User: state.signalingSocket.id,
           Status: 'disconnected'
         },
         msg: 'Update User connection status'
       })
-      
+
 
       console.log(peerConnections.current)
-      
-      if(peer_role === 'host'){
+
+      if (peer_role === 'host') {
         alert('호스트가 접속을 종료했습니다. 목록 페이지로 이동합니다.')
-        return navigate('/user', {replace: true}) 
+        return navigate('/user', { replace: true })
       }
       console.log(`${peer_id} 님이 방을 나가셨습니다.`)
     })
@@ -226,100 +240,133 @@ const View = () => {
 
 
 
-  const addFavorite = async()  => {
+  const addFavorite = async () => {
     await PostFetchQuotes({
       uri: `${process.env.REACT_APP_LOCAL_IP}/addLike`,
       body: {
-        RoomId: roomId, 
-        UserSocketId: state.signalingSocket.id, 
+        RoomId: roomId,
+        UserSocketId: state.signalingSocket.id,
         action: true
       },
       msg: 'Add like to the channel'
     })
-  
+
     state.signalingSocket.emit('likeAdd', {
-      channel: roomId, 
-      peer_id: state.signalingSocket.id, 
-      currentLikeCount : roomLikeCountTotal
+      channel: roomId,
+      peer_id: state.signalingSocket.id,
+      currentLikeCount: roomLikeCountTotal
     })
 
-   }
+  }
 
-// useEffect(()=>{
-//       // Room Info GET aka. title, like, 
-//       GetFetchQuotes({
-//         uri: `${process.env.REACT_APP_LOCAL_IP}/roomInfo/${roomId}`,
-//         msg: 'Get the room information '
-//       }).then(response=>{
-//         console.log(response)
-//         setRoomLikeCountTotal(response.likeCountTotal)
-//         setRoomTitle(response.title)
-//       })
-// }, [roomLikeCountTotal])
+  // useEffect(()=>{
+  //       // Room Info GET aka. title, like, 
+  //       GetFetchQuotes({
+  //         uri: `${process.env.REACT_APP_LOCAL_IP}/roomInfo/${roomId}`,
+  //         msg: 'Get the room information '
+  //       }).then(response=>{
+  //         console.log(response)
+  //         setRoomLikeCountTotal(response.likeCountTotal)
+  //         setRoomTitle(response.title)
+  //       })
+  // }, [roomLikeCountTotal])
+
+  const chattingScroll = () => {
+    scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+  }
+
+  const sendChatMessage = async () => {
+    const msg = msgerInput
 
 
+    await PostFetchQuotes({
+      uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
+      body: {
+        RoomId: roomId,
+        User: state.signalingSocket.id,
+        Text: msgerInput.current
+      },
+      msg: 'Create Chat Data Log'
+    })
 
- const sendChatMessage = async() => {
-  const msg = msgerInput
 
+    state.signalingSocket.emit('chatting', (
+      {
+        channel: roomId,
+        peer_id: state.signalingSocket.id,
+        msg: msgerInput.current,
+        nick: nickName.current
+      }
+    ))
 
-  await PostFetchQuotes({
-    uri: `${process.env.REACT_APP_LOCAL_IP}/createChatLog`,
-    body: {
-      RoomId: roomId, 
-      User: state.signalingSocket.id, 
-      Text: msgerInput.current
-    },
-    msg: 'Create Chat Data Log'
-  })
-  
+    setChatMessage(
+      chatMessage => [...chatMessage, { nick: nickName.current, msg: msg.current }]
+    )
+    chattingScroll()
+  }
 
-  state.signalingSocket.emit('chatting', (
-    {
-      channel: roomId,
-      peer_id: state.signalingSocket.id, 
-      msg: msgerInput.current}
-  ))
-
-  setChatMessage(
-    chatMessage => [...chatMessage, msg.current]
-  )
-}
+  useEffect(() => {
+    chattingScroll()
+  }, [chatMessage])
 
 
   return (
     <div className='user'>
       ENJOYSTREET
-      <br/>
+      <br />
       <img width={30} height={30} alt='host profile image' src={hostProfile} />
       <span className='hostNickName'>{hostNickName}</span>
-      <br/>
-      <div className='likeCountTotal'> 
+      <br />
+      <div className='likeCountTotal'>
         {roomLikeCountTotal}
       </div>
+      <video className={style.myVideo} ref={videoRef} autoPlay playsInline muted={muteState} />
+      {/* <div  style={{position: 'fixed', backgroundColor: 'white'}}>
       <video ref={videoRef} autoPlay playsInline muted />
+      </div> */}
+
       <div className='wrapper'>
-        <div className='display-container'>
-          <ul className='chatting-list'>
-              {chatMessage.map((msgObj,idx) => {return <li key={idx}>{msgObj}</li>})}
+        <div
+          // className='display-container'
+          className={style.chatting_list}
+        >
+          <ul
+            ref={scrollRef}
+          // className='chatting-list'
+          >
+            {chatMessage.map((el, idx) => {
+              return nickName.current === el.nick ?
+                <li className={style.my_message} key={idx}>
+                  <h3>{el.nick}</h3>
+                  <span>{el.msg}</span>
+                </li> :
+                <li className={style.your_message} key={idx}>
+                  <h3>{el.nick}</h3>
+                  <div >{el.msg}</div>
+                </li>
+            })}
+            {/* {chatNick.map((nickObj, idx) => { return <span key={idx}>{nickObj}</span> })} */}
           </ul>
         </div>
         <div className='user-container'>
           <label htmlFor='nickName'>이름 :</label>
-          <input type='text' ref={nickName}/>
+          <input type='text' ref={nickName} onChange={(e) => nickName.current = e.target.value} />
         </div>
-        <div className='input-container'/>
-          <span>
-            <input type='text' className='chatting-input' ref={msgerInput} onChange={(e)=>{msgerInput.current = e.target.value}}/>
-            <button className='send-button' onClick={sendChatMessage}>전송</button>
-          </span>
+        <div className='input-container' />
+        <span>
+          <input type='text' className='chatting-input' ref={msgerInput} onChange={(e) => { msgerInput.current = e.target.value }} />
+          <button className='send-button' onClick={sendChatMessage}>전송</button>
+        </span>
       </div>
       <span className='shop-container'>
-        <Button startIcon={<FormatListBulletedIcon/>}>{itemTotal}</Button>
+        <Button startIcon={<FormatListBulletedIcon />}>{itemTotal}</Button>
       </span>
       <span className='favorite-btn'>
-      <Button onClick={addFavorite} startIcon={<FavoriteIcon/>}></Button>
+        <Button onClick={addFavorite} startIcon={<FavoriteIcon />}></Button>
       </span>
+      {muteState ? <button onClick={() => { setMuteState(false) }}>현재 음소거 {muteState} 상태</button> : <button onClick={() => {
+        setMuteState(true)
+      }}>현재 음소거 {muteState} 상태</button>}
     </div>
   )
 }

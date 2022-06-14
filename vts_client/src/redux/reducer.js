@@ -13,29 +13,35 @@ let signalingSocket = io(signalingServer, {
 })
 
 const initialState = {
-  dummy: 'dummy',
+  // dummy: 'dummy',
   signalingSocket: signalingSocket,
-  roomContents: 0,
-  testNum: 1,
+  // roomContents: 0,
+  // testNum: 1,
   localMediaStream: null,
   user: null,
   mediaConstraints: {
-    useVideo: true, 
-    useAudio: true, 
+    useVideo: true,
+    useAudio: true,
     myVideoStatus: true,
-    myAudioStatus: true, 
+    myAudioStatus: true,
     myHandStatus: false,
-    isRecScreenSream: false, 
-    videoMaxFrameRate : 30 
+    isRecScreenSream: false,
+    videoMaxFrameRate: 30
   },
-  test: true
+  mediaRecorder: null,
+  recScreenStream: null,
+  test: true,
+}
+
+const sessionInitialState = {
+
 }
 
 
 export const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case 'user_authenticated':
-      return {...state, user: action.payload}
+      return { ...state, user: action.payload }
     case 'dummy_dispatch':
       console.log(action.payload)
       return { ...state, dummy: action.payload }
@@ -47,25 +53,35 @@ export const rootReducer = (state = initialState, action) => {
     case 'set_local_media_stream':
       return { ...state, localMediaStream: action.payload }
     case 'update_local_media_stream':
-      return {...state, localMediaStream: action.payload}
+      return { ...state, localMediaStream: action.payload }
     case 'update_audio_status':
       state.mediaConstraints.myAudioStatus = action.payload
-      return {...state}
+      return { ...state }
     case 'update_video_status':
       state.mediaConstraints.myVideoStatus = action.payload
-      return {...state}
-    case 'update_audio_constraint':  
-      state.mediaConstraints.useAudio  = action.payload
-      return {...state}
+      return { ...state }
+    case 'update_audio_constraint':
+      state.mediaConstraints.useAudio = action.payload
+      return { ...state }
     case 'update_video_constraint':
-      state.mediaConstraints.useVideo  = action.payload
-      return {...state}
+      state.mediaConstraints.useVideo = action.payload
+      return { ...state }
 
     case 'update_record_state':
-        state.mediaConstraints.isRecScreenSream = action.payload
-        return {...state}
+      state.mediaConstraints.isRecScreenSream = action.payload
+      return { ...state }
+    case 'update_media_recorder':
+      return { ...state, mediaRecorder: action.payload }
+    case 'update_recScreen_stream':
+      return { ...state, recScreenStream: action.payload }
     default:
       return state
   }
 }
 
+export const sessionReducer = (state = sessionInitialState, action) => {
+  switch (action.type) {
+    default:
+      return state
+  }
+}
