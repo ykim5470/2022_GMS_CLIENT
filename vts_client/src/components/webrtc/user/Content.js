@@ -38,18 +38,22 @@ const Content = () => {
           let thumnail = `${process.env.REACT_APP_LOCAL_IP}/uploads/live/thumbnailSource/${el.setConfig[0].Thumbnail}`
           // console.log('contents el')
           return (
-            <form key={idx}>
-              <img width={100} height={50} alt='thumbnail' src={thumnail} />
-              <div>
-                {el.setConfig[0].Title}
-                <br />
-                <div >{el.setConfig[0].Host} </div>
-                <div>{el.setConfig[0].RoomCategory}</div>
-                <button type='button' onClick={joinRoom} value={el.RoomId}>
-                  join
-                </button>
-              </div>
-            </form>
+            <ul className={style.contents_container}>
+              <li className={style.contents_li}>
+                <form key={idx}>
+                  <img width={100} height={50} alt='thumbnail' src={thumnail} />
+                  <div>
+                    {el.setConfig[0].Title}
+                    <br />
+                    <div >{el.setConfig[0].Host} </div>
+                    <div>{el.setConfig[0].RoomCategory}</div>
+                    <button type='button' onClick={joinRoom} value={el.RoomId}>
+                      join
+                    </button>
+                  </div>
+                </form>
+              </li>
+            </ul>
           )
         })}
       </div>

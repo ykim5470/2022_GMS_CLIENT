@@ -443,7 +443,10 @@ const Media = (props) => {
   console.log('selfChatMessage', selfChatMessage)
 
   return (
-    <div className='media'>
+    <div
+      className='media'
+      className={style.container}
+    >
       {mediaConstraintsState.isRecScreenSream ? <div className='rec-elapsed-time'>REC : {recElapsedTime}</div> : <div>녹화 실행 아님</div>}
       <video className={style.myVideo} ref={videoRef} autoPlay playsInline muted />
       <div className='wrapper'>
@@ -471,13 +474,13 @@ const Media = (props) => {
           </ul>
         </div>
         <div className='user-container'>
-          <label htmlFor='nickName'>이름 :</label>
+          <label htmlFor='nickName'>名前 :</label>
           <input type='text' ref={nickName} onChange={(e) => { nickName.current = e.target.value }} />
         </div>
         <div className='input-container' />
         <span>
           <input type='text' className='chatting-input' ref={msgerInput} onChange={(e) => { msgerInput.current = e.target.value }} />
-          <button className='send-button' onClick={sendChatMessage}>전송</button>
+          <button className='send-button' onClick={sendChatMessage}>送信</button>
         </span>
       </div>
       <div className='swap-camera'>

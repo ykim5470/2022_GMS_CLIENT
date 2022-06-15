@@ -9,7 +9,13 @@ body {
 }
 
 .container {
-  height: 100vh;
+  height: 95vh;
   overflow-y: auto;
   overflow: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+
+.contents_container {
+  margin-top: 20px;
+  margin-bottom: 70px;
 }

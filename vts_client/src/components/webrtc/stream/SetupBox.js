@@ -119,7 +119,7 @@ const SetupBox = () => {
       msg: 'Create Room',
     }).then(
       res => {
-        if (res) {
+        if (res.status == 200) {
           // 소켓 연결을 위한 정보 server로 전달
           state.signalingSocket.emit('join', {
             channel: roomId,

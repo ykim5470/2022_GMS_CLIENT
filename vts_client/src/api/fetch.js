@@ -23,7 +23,7 @@ export const PostFetchQuotes = async (apiConfig) => {
     return await axios.post(apiConfig.uri, apiConfig.body).then((resolve) => {
       if (resolve.status === 200) {
         console.log(`${resolve.status}: ${apiConfig.msg} request success`)
-        return resolve.data
+        return resolve
       } else {
         console.log(`${resolve.status}: ${apiConfig.msg} request failed`)
         return

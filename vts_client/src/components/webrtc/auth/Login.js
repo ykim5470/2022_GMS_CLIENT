@@ -28,10 +28,12 @@ const Login = () => {
                 },
                 msg: 'guide login request'
             }).then((response) => {
-                if (response === undefined) {
+                console.log(response)
+                if (response.status !== 200) {
                     alert('Login Failed')
-                } else {
-                    const userToken = response.token
+                }
+                else {
+                    const userToken = response.data.token
                     console.log(userToken)
                     dispatch(userAuthenticate(userToken))
                     sessionStorage.setItem('token', userToken)
@@ -47,7 +49,7 @@ const Login = () => {
     console.log('로그인 컴포 렌더 횟수')
     return (
         <div className={style.container}>
-            <article className='login-form' className={style.login_form}>
+            <article className={style.login_form}>
                 <div className='title-wrap'>Enjoy Street(가이드)</div>
                 <form onSubmit={loginRequest}>
                     <label>

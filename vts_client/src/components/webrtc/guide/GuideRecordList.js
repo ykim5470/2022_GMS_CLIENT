@@ -61,7 +61,7 @@ const GuideRecordList = () => {
               <ul key={idx} >
                 <li key={el.Id}>
                   <span>{idx + 1}</span>
-                  <span>가이드 이름</span>
+                  <span>Guide 名前</span>
                   <img src={thumbnail} alt="thumbnail" width={100} height={50} />
                   <span>{el.Title}</span>
                   <span>{brand[0].name}</span>

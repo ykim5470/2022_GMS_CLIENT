@@ -231,7 +231,7 @@ const View = () => {
       console.log(peerConnections.current)
 
       if (peer_role === 'host') {
-        alert('호스트가 접속을 종료했습니다. 목록 페이지로 이동합니다.')
+        alert('ホストが接続を終了しました。リストページに移動します。')
         return navigate('/user', { replace: true })
       }
       console.log(`${peer_id} 님이 방을 나가셨습니다.`)
@@ -311,7 +311,10 @@ const View = () => {
 
 
   return (
-    <div className='user'>
+    <div
+      // className='user'
+      className={style.container}
+    >
       ENJOYSTREET
       <br />
       <img width={30} height={30} alt='host profile image' src={hostProfile} />
@@ -349,13 +352,13 @@ const View = () => {
           </ul>
         </div>
         <div className='user-container'>
-          <label htmlFor='nickName'>이름 :</label>
+          <label htmlFor='nickName'>名前 :</label>
           <input type='text' ref={nickName} onChange={(e) => nickName.current = e.target.value} />
         </div>
         <div className='input-container' />
         <span>
           <input type='text' className='chatting-input' ref={msgerInput} onChange={(e) => { msgerInput.current = e.target.value }} />
-          <button className='send-button' onClick={sendChatMessage}>전송</button>
+          <button className='send-button' onClick={sendChatMessage}>送信</button>
         </span>
       </div>
       <span className='shop-container'>
@@ -364,9 +367,11 @@ const View = () => {
       <span className='favorite-btn'>
         <Button onClick={addFavorite} startIcon={<FavoriteIcon />}></Button>
       </span>
-      {muteState ? <button onClick={() => { setMuteState(false) }}>현재 음소거 {muteState} 상태</button> : <button onClick={() => {
-        setMuteState(true)
-      }}>현재 음소거 {muteState} 상태</button>}
+      {muteState ? <button onClick={() => { setMuteState(false) }}>消音モード
+        {muteState}</button> : <button onClick={() => {
+          setMuteState(true)
+        }}>消音モード
+        {muteState} </button>}
     </div>
   )
 }
