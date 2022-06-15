@@ -16,6 +16,7 @@ const NavBar = () => {
         <div className={style.nav_head_text}>nav bar</div>
         <button className={style.login_btn} onClick={handleLogin}>login</button>
       </div>
+
       {/* <div className={style.side_container}>
         <div className={style.side_head_text}>side bar</div>
       </div> */}
