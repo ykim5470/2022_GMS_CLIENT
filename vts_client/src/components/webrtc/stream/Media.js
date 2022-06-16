@@ -15,8 +15,11 @@ import { Co2Sharp, CollectionsOutlined } from '@mui/icons-material'
 
 import style from './Media.module.css'
 
+import Setting from './Setting'
+
 
 const Media = (props) => {
+  const naviagte = useNavigate()
   const state = useSelector(state => state)
   const dispatch = useDispatch()
   const mediaConstraintsState = state.mediaConstraints
@@ -43,10 +46,13 @@ const Media = (props) => {
 
   const scrollRef = useRef();
 
-  const naviagte = useNavigate()
+  const [modal, setModal] = useState(false);
 
-  console.log('peerConnections', peerConnections)
-  console.log('peerConnection', peerConnection)
+
+  const [audioInputSelect, setAudioInputSelect] = useState([])
+  const [audioOutputSelect, setAudioOutputSelect] = useState([])
+  const [videoSelect, setVideoSelect] = useState([])
+
 
   useEffect(() => {
 
@@ -123,9 +129,6 @@ const Media = (props) => {
       setChatMessage(
         chatMessage => [...chatMessage, { msg, nick }]
       )
-      // setChatMessage(
-      //   chatMessage => [...chatMessage, `${nick}: ${msg}`]
-      // )
     })
 
 
@@ -439,12 +442,105 @@ const Media = (props) => {
     }
   }
 
-  console.log('chatMessage', chatMessage)
-  console.log('selfChatMessage', selfChatMessage)
+  const handleSetting = () => {
+    setModal(!modal)
+    setupMySettings()
+    console.log('setting click')
+  }
+
+  function setupMySettings() {
+    navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
+  }
+
+  function gotDevices(deviceInfos) {
+    console.log('deviceInfos', deviceInfos)
+    // check devices
+
+    for (let i = 0; i !== deviceInfos.length; ++i) {
+      const deviceInfo = deviceInfos[i];
+      console.log("device-info ------> ", deviceInfo);
+
+      switch (deviceInfo.kind) {
+        case 'videoinput':
+          // audioInputSelect에 요소 추가
+          // setVideoSelect([.../videoSelect, deviceInfo])
+          // setVideoSelect((prev)=>{
+
+          // })
+          console.log('여기 오긴 하나?')
+          setVideoSelect(
+            prevVideoSelect => [...prevVideoSelect, deviceInfo]
+          )
+          // 
+          break;
+
+        case 'audioinput':
+          // videoSelect에 요소 추가
+          setAudioInputSelect([...audioInputSelect, deviceInfo])
+          break;
+
+        case 'audiooutput':
+          // audioOutputSelect에 요소 추가
+          setAudioOutputSelect([...audioOutputSelect, deviceInfo])
+          break;
+
+        default:
+          console.log('Some other kind of source/device: ', deviceInfo);
+      }
+    } // end for devices
+    console.log(videoSelect)
+
+  }
+
+  function gotStream(stream) {
+    // refreshMyStreamToPeers(stream, true);
+    refreshMyLocalStream(stream, true);
+    if (state.myVideoStatus) {
+      setMyVideoStatusTrue();
+    }
+    // Refresh button list in case labels have become available
+    return navigator.mediaDevices.enumerateDevices();
+  }
+
+  function setMyVideoStatusTrue() {
+    if (state.myVideoStatus) return;
+    // Put video status alredy ON
+    state.localMediaStream.getVideoTracks()[0].enabled = true;
+    dispatch(videoUpdate(true))
+    // myVideoStatus = true;
+    // emitPeerStatus('video', myVideoStatus);
+    // only for desktop
+  }
+
+  function setupLocalMedia(callback, errorback) {
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then((stream) => {
+        // local device 넣어서 loadLocalMedia 실행
+        // loadLocalMedia(stream);
+        // startPitchDetection(stream);
+        if (callback) callback();
+      })
+      .catch((err) => {
+        console.error('Access denied for audio/video', err);
+        if (errorback) errorback();
+      });
+  }
+
+  useEffect(() => {
+    setupLocalMedia()
+  }, [])
+
+
+
+  // console.log('audioInputSelect', audioInputSelect)
+  // console.log('audioOutputSelect', audioOutputSelect)
+  console.log('videoSelect', videoSelect)
+
 
   return (
     <div
-      className='media'
+      // className='media'
       className={style.container}
     >
       {mediaConstraintsState.isRecScreenSream ? <div className='rec-elapsed-time'>REC : {recElapsedTime}</div> : <div>녹화 실행 아님</div>}
@@ -522,20 +618,13 @@ const Media = (props) => {
         )}
       </ToggleButtonGroup>
       <ToggleButtonGroup>
-        <ToggleButton>설정</ToggleButton>
+        <ToggleButton onClick={handleSetting}>설정
+          {modal ? <Setting handleSetting={handleSetting} audioInputSelect={audioInputSelect} audioOutputSelect={audioOutputSelect} videoSelect={videoSelect} /> : null}
+        </ToggleButton>
       </ToggleButtonGroup>
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
 
 export default Media
 
@@ -614,4 +703,8 @@ function bytesToSize(bytes) {
   if (bytes == 0) return '0 Byte'
   let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
   return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i]
+}
+
+function handleError(err) {
+  console.log('navigator.MediaDevices.getUserMedia error: ', err);
 }

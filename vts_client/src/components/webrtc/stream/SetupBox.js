@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { audioUpdate, videoUpdate, createLocalMedia } from '../../../redux/thunk'
+import { audioUpdate, videoUpdate, createLocalMedia, videoConstraintUpdate, audioConstraintUpdate } from '../../../redux/thunk'
 
 import { GetFetchQuotes, PostFetchQuotes } from '../../../api/fetch'
 import DetectRTC from 'detectrtc'
@@ -62,18 +62,18 @@ const SetupBox = () => {
 
 
   const audioController = () => {
-    useAudio.current ? dispatch(audioUpdate(false)) : dispatch(audioUpdate(true))
-    // useAudio.current = !mediaConstraintsState.useAudio
-    // const currentAudioOption = useAudio.current
-    // dispatch(audioUpdate(currentAudioOption)) // myVideoStatus = true || false && useVideo = constraint 
+    useAudio.current = !mediaConstraintsState.useAudio
+    const currentAudioOption = useAudio.current
+    console.log('currentAudioOption', currentAudioOption)
+    dispatch(audioConstraintUpdate(currentAudioOption)) // myVideoStatus = true || false && useVideo = constraint 
   }
-
-  console.log(state.mediaConstraints.useVideo)
 
   const videoController = () => {
     useVideo.current = !mediaConstraintsState.useVideo
     const currentVideoOption = useVideo.current
-    dispatch(videoUpdate(currentVideoOption))
+    dispatch(videoConstraintUpdate(currentVideoOption))
+    console.log('mediaConstraintsState', mediaConstraintsState.useVideo)
+    console.log('usevideo current', useVideo.current)
   }
 
   const onFileChange = (event) => {
@@ -126,8 +126,8 @@ const SetupBox = () => {
             peer_name: peerInfo,
             peer_role: 'host',
             peer_geo: peerGeo,
-            peer_video: mediaConstraintsState.myVideoStatus,
-            peer_audio: mediaConstraintsState.myAudioStatus,
+            peer_video: mediaConstraintsState.useVideo,
+            peer_audio: mediaConstraintsState.useAudio,
             peer_hand: mediaConstraintsState.myHandStatus,
             peer_rec: mediaConstraintsState.isRecScreenSream,
           })
@@ -135,8 +135,8 @@ const SetupBox = () => {
           console.log(navigator.mediaDevices)
           navigator.mediaDevices.getUserMedia(constraints).then(stream => {
             console.log('Access granted to audio/video')
-            stream.getVideoTracks()[0].enabled = mediaConstraintsState.myVideoStatus
-            stream.getAudioTracks()[0].enabled = mediaConstraintsState.myAudioStatus
+            stream.getVideoTracks()[0].enabled = mediaConstraintsState.useVideo
+            stream.getAudioTracks()[0].enabled = mediaConstraintsState.useAudio
             return dispatch(createLocalMedia(stream))
           })
         } else {
@@ -195,12 +195,12 @@ const SetupBox = () => {
         <input type='submit' value='setup done' />
       </form>
       <ToggleButtonGroup onClick={videoController} aria-label='video toggle'>
-        {useVideo.current ?
-          (<ToggleButton value={useVideo} aria-label='video off'>
+        {mediaConstraintsState.useVideo ?
+          (<ToggleButton value={mediaConstraintsState.useVideo} aria-label='video off'>
             video off
           </ToggleButton>)
           :
-          (<ToggleButton value={useVideo} aria-label='video on'>
+          (<ToggleButton value={mediaConstraintsState.useVideo} aria-label='video on'>
             video on
           </ToggleButton>)}
       </ToggleButtonGroup>
